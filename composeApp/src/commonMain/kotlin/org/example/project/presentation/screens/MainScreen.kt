@@ -26,7 +26,7 @@ fun MainScreen() {
         Button(
             onClick = {}
         ) {
-            Text("Продолжить")
+            Text("Продолжить нахуй")
         }
     }
 }
