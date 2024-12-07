@@ -17,22 +17,12 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 import gotovomp.composeapp.generated.resources.Res
 import gotovomp.composeapp.generated.resources.compose_multiplatform
+import org.example.project.presentation.screens.MainScreen
 
 @Composable
 fun App() {
     MaterialTheme {
-        var count by remember { mutableStateOf(0) }
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
-        ){
-            Button(
-                onClick = {count++}
-            ) {
-                Text("Тыкнулиии раз: $count")
-            }
-        }
+        MainScreen()
     }
 }
 
