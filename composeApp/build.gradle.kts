@@ -45,6 +45,9 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.navigation.compose)
+            implementation(libs.adaptive.navigation)
+
         }
     }
 }
@@ -79,6 +82,7 @@ android {
 dependencies {
     implementation(libs.androidx.material3.android)
     implementation(libs.androidx.ui.text.google.fonts)
+    implementation(libs.navigation.compose)
     debugImplementation(compose.uiTooling)
 }
 
