@@ -13,17 +13,20 @@ import androidx.compose.ui.unit.dp
 import org.example.project.presentation.components.PhoneField
 
 @Composable
-fun AuthScreen() {
+fun AuthScreen(
+    logIn: () -> Unit
+) {
   Column(
       modifier = Modifier.fillMaxSize().padding(32.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.Center) {
+      verticalArrangement = Arrangement.Center
+  ) {
         PhoneField(
             onContinue = { phone ->
               println(phone)
               true
             })
-        Button(onClick = {}) {
+        Button(onClick = logIn) {
           Text("Продолжить") // TODO res
         }
       }

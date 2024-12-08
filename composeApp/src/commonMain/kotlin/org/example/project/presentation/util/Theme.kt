@@ -124,7 +124,7 @@ val surfaceContainerDark = Color(0xFF261E18)
 val surfaceContainerHighDark = Color(0xFF312822)
 val surfaceContainerHighestDark = Color(0xFF3C332C)
 
-private val appLightScheme =
+val appLightScheme =
     lightColorScheme(
         primary = primaryLight,
         onPrimary = onPrimaryLight,
@@ -163,7 +163,7 @@ private val appLightScheme =
         surfaceContainerHighest = surfaceContainerHighestLight,
     )
 
-private val appDarkScheme =
+val appDarkScheme =
     darkColorScheme(
         primary = primaryDark,
         onPrimary = onPrimaryDark,
