@@ -51,7 +51,7 @@ fun App() {
                         colors = TopAppBarDefaults.topAppBarColors().copy(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer),
                         title = {
-                        Text(it.title, style = MaterialTheme.typography.displaySmall)
+                        Text(it.title, style = MaterialTheme.typography.headlineMedium)
                     })
                 }
             },
@@ -80,7 +80,6 @@ fun App() {
                 composable(Nav.FEED.route) {
                     FeedScreen()
                 }
-
                 composable(Nav.MINE.route) {
                     PersonalScreen()
                 }
