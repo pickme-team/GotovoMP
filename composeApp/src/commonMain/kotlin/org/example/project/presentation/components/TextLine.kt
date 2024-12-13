@@ -41,6 +41,9 @@ fun TextLine(
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     placeholder: (@Composable () -> Unit)? = null,
+    placeholderText: String = "Placeholder",
+    prefix: String? = null,
+
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -85,16 +88,18 @@ fun TextLine(
                   drawContent()
                 }) {
               Row {
-                  Text("+7 ",
-                      style =
-                      MaterialTheme.typography.headlineSmall.copy(
-                          MaterialTheme.colorScheme.onBackground
-                      ))
+                  if (prefix != null) {
+                      Text(prefix,
+                          style =
+                          MaterialTheme.typography.headlineSmall.copy(
+                              MaterialTheme.colorScheme.onBackground
+                          ))
+                  }
                   Box {
                       innerTextField()
                       if (value.text.isEmpty()) {
                           Text(
-                              "000 000 00 00",
+                              placeholderText,
                               color = MaterialTheme.colorScheme.onBackground.copy(0.3f),
                               style =
                               MaterialTheme.typography.headlineSmall.copy(

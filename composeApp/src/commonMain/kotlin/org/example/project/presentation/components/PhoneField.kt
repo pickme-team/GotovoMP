@@ -94,6 +94,8 @@ fun PhoneField(
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
             )
         },
+        placeholderText = "000 000 00 00",
+        prefix = "+7  ",
         isError = hasError,
         errorText = "Enter a valid phone number"
     )
