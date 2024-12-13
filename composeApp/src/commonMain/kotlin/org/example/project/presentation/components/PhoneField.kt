@@ -22,10 +22,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -43,19 +45,20 @@ fun PhoneField(
 ) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
-    var phone by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf(TextFieldValue()) }
     var hasError by remember { mutableStateOf(isErr) }
-    CustomTextField(
+    TextLine(
         value = phone,
         onValueChange = { it ->
             hasError = false
-            phone = formatClipboardNumber(it.take(mask.count { it == maskNumber }))
+            val text = formatClipboardNumber(it.text.take(mask.count { it == maskNumber }))
+            phone = TextFieldValue(text, TextRange(text.length))
         },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next
         ),
         keyboardActions = KeyboardActions(onNext = {
-            hasError = if (mask.filter { it.isDigit() }.length == phone.length) {
+            hasError = if (mask.filter { it.isDigit() }.length == phone.text.length) {
                 focusManager.moveFocus(FocusDirection.Down)
                 !onContinue(prefix + phone)
             } else {
@@ -67,10 +70,10 @@ fun PhoneField(
             .fillMaxWidth()
             .focusRequester(focusRequester),
         trailingIcon = {
-            if (phone.isNotEmpty()) {
+            if (phone.text.isNotEmpty()) {
                 IconButton(modifier = Modifier.padding(8.dp, 0.dp), onClick = {
                     hasError = false
-                    phone = ""
+                    phone = TextFieldValue()
                     focusRequester.requestFocus()
                 }) {
                     Icon(Icons.Default.Clear, contentDescription = "Clear")
