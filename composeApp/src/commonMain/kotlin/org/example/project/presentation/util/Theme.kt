@@ -15,6 +15,8 @@ import gotovomp.composeapp.generated.resources.cabin_medium
 import gotovomp.composeapp.generated.resources.cabin_regular
 import gotovomp.composeapp.generated.resources.cabin_semibold
 import gotovomp.composeapp.generated.resources.plus_jakarta_sans_regular
+import gotovomp.composeapp.generated.resources.unbounded_light
+import gotovomp.composeapp.generated.resources.unbounded_medium
 import org.jetbrains.compose.resources.Font
 
 @Composable
@@ -30,7 +32,7 @@ fun makeTypography(): Typography {
   val displayFontFamily =
       FontFamily(
           Font(
-              Res.font.plus_jakarta_sans_regular,
+              Res.font.unbounded_medium,
               weight = FontWeight.Normal,
               style = FontStyle.Normal))
   return Typography(

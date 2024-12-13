@@ -17,11 +17,11 @@ fun createHttpClient(): HttpClient {
             level = LogLevel.BODY
         }
         install(ContentNegotiation){
-//            json(json = Json {
-//                prettyPrint = true
-//                isLenient = true
-//                ignoreUnknownKeys = true
-//            })
+            json(json = Json {
+                prettyPrint = true
+                isLenient = true
+                ignoreUnknownKeys = true
+            })
             register(
                 ContentType.Text.Plain, KotlinxSerializationConverter(
                     Json {
