@@ -76,7 +76,6 @@ fun App() {
                 startDestination = Nav.FEED.route) {
                   composable(Nav.FEED.route) { FeedScreen(feedVM) }
                   composable(Nav.MINE.route) { PersonalScreen() }
-
                   composable(Nav.PROFILE.route) { ProfileScreen() }
                 }
           }
