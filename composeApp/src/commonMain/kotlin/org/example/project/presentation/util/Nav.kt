@@ -12,7 +12,7 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class Nav(val route: String, val selectedIcon: ImageVector, val unselectedIcon: ImageVector, val title: String) {
-    MINE("mine", Icons.Filled.Star, Icons.Outlined.Star, "Мои Рецеты"),
+    MINE("mine", Icons.Filled.Star, Icons.Outlined.Star, "Мои Рецепты"),
     FEED("main", Icons.Filled.Home, Icons.Outlined.Home, "Лента"),
     PROFILE("profile", Icons.Filled.AccountCircle, Icons.Outlined.AccountCircle, "Профиль")
 }
