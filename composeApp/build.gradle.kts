@@ -53,6 +53,9 @@ kotlin {
 
             implementation(libs.bundles.ktor)
 
+            implementation(libs.coil)
+            implementation(libs.coil.network.ktor3)
+            implementation(libs.coil.compose)
         }
 
         nativeMain.dependencies {

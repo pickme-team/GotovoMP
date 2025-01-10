@@ -1,22 +1,163 @@
 package org.example.project.presentation.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import org.example.project.presentation.util.bouncyClickable
 
 @Composable
-fun PersonalScreen() {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Own Recepies")
+fun PersonalScreen(modifier: Modifier = Modifier) {
+    LazyColumn(modifier = modifier, contentPadding = PaddingValues(24.dp)) {
+        item {
+            Section(title = "Созданные мной", icon = Icons.Default.Favorite)
+        }
     }
 }
+
+@Composable
+private fun Section(title: String, modifier: Modifier = Modifier, icon: ImageVector? = null) {
+    val items = listOf(
+        "Паста «Люксор»" to "https://lobsterfrommaine.com/wp-content/uploads/fly-images/1577/20210517-Pasta-alla-Gricia-with-Lobster3010-1024x576-c.jpg",
+        "Пицца Магритта" to "https://upload.wikimedia.org/wikipedia/commons/a/a3/Eq_it-na_pizza-margherita_sep2005_sml.jpg",
+        "Ньокки от шефа" to "https://upload.wikimedia.org/wikipedia/commons/8/86/Gnocchi_di_ricotta_burro_e_salvia.jpg",
+        "Синнабоны от шефа" to "https://bakesbybrownsugar.com/wp-content/uploads/2019/11/Pecan-Cinnamon-Rolls-84-500x500.jpg",
+        "Я ваще хз что это" to "https://bestlah.sg/wp-content/uploads/2024/07/Best-Peranakan-Food-Singapore.jpeg"
+    )
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            icon?.let { imageVector ->
+                Icon(imageVector, contentDescription = title)
+            }
+            Text(text = title, style = MaterialTheme.typography.headlineSmall)
+        }
+        val rowState = rememberLazyListState()
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp), state = rowState) {
+            items(items) {
+                Recipe(title = it.first, imageUrl = it.second)
+            }
+        }
+    }
+}
+
+@Composable
+private fun Recipe(
+    title: String, imageUrl: String, modifier: Modifier = Modifier
+) {
+    var isPopupOpen by rememberSaveable { mutableStateOf(false) }
+    Box(
+        modifier = modifier.width(160.dp).aspectRatio(0.8f)
+    ) {
+        RecipeCard(title, imageUrl, onClick = { }, onHold = { isPopupOpen = true })
+        RecipeDropdown(isPopupOpen) { isPopupOpen = false }
+    }
+}
+
+@Composable
+fun RecipeCard(title: String, imageUrl: String, onClick: () -> Unit, onHold: () -> Unit) = Card(
+    modifier = Modifier.fillMaxSize().bouncyClickable(onClick = {
+        println("Clicked $title")
+        onClick()
+    }, onHold = {
+        println("Hold $title")
+        onHold()
+    })
+) {
+    var imageLoaded by rememberSaveable { mutableStateOf(false) }
+    Box(
+        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart
+    ) {
+        AsyncImage(modifier = Modifier.fillMaxSize().drawWithContent {
+            drawContent()
+            drawRect(
+                brush = Brush.verticalGradient(
+                    0f to Color.Transparent, 0.85f to Color.Black.copy(alpha = 0.75f)
+                )
+            )
+        },
+            model = imageUrl,
+            contentDescription = title,
+            contentScale = ContentScale.Crop,
+            onSuccess = { imageLoaded = true })
+        Text(
+            text = title,
+            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 3,
+            style = MaterialTheme.typography.titleLarge.copy(lineBreak = LineBreak.Paragraph)
+        )
+    }
+}
+
+@Composable
+private fun RecipeDropdown(isPopupOpen: Boolean, onDismissRequest: () -> Unit) = DropdownMenu(
+    modifier = Modifier.width(160.dp),
+    onDismissRequest = onDismissRequest,
+    expanded = isPopupOpen,
+    shape = MaterialTheme.shapes.medium,
+    offset = DpOffset(0.dp, 16.dp)
+) {
+    RecipeDropdownItem(text = "Поделиться", icon = Icons.Default.Share) { onDismissRequest() }
+    RecipeDropdownItem(text = "Удалить", icon = Icons.Default.Delete) { onDismissRequest() }
+}
+
+@Composable
+private fun RecipeDropdownItem(text: String, icon: ImageVector? = null, onClick: () -> Unit) =
+    DropdownMenuItem(text = {
+        Text(
+            text,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+    }, leadingIcon = {
+        icon?.let {
+            Icon(
+                imageVector = it,
+                contentDescription = null,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+    }, onClick = onClick
+    )
