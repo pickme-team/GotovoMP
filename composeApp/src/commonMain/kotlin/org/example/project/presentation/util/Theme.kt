@@ -15,6 +15,8 @@ import gotovomp.composeapp.generated.resources.cabin_medium
 import gotovomp.composeapp.generated.resources.cabin_regular
 import gotovomp.composeapp.generated.resources.cabin_semibold
 import gotovomp.composeapp.generated.resources.plus_jakarta_sans_regular
+import gotovomp.composeapp.generated.resources.unbounded_light
+import gotovomp.composeapp.generated.resources.unbounded_medium
 import org.jetbrains.compose.resources.Font
 
 @Composable
@@ -30,7 +32,7 @@ fun makeTypography(): Typography {
   val displayFontFamily =
       FontFamily(
           Font(
-              Res.font.plus_jakarta_sans_regular,
+              Res.font.unbounded_medium,
               weight = FontWeight.Normal,
               style = FontStyle.Normal))
   return Typography(
@@ -40,9 +42,9 @@ fun makeTypography(): Typography {
       headlineLarge = baseline.headlineLarge.copy(fontFamily = displayFontFamily),
       headlineMedium = baseline.headlineMedium.copy(fontFamily = displayFontFamily),
       headlineSmall = baseline.headlineSmall.copy(fontFamily = displayFontFamily),
-      titleLarge = baseline.titleLarge.copy(fontFamily = displayFontFamily),
-      titleMedium = baseline.titleMedium.copy(fontFamily = displayFontFamily),
-      titleSmall = baseline.titleSmall.copy(fontFamily = displayFontFamily),
+      titleLarge = baseline.titleLarge.copy(fontFamily = bodyFontFamily),
+      titleMedium = baseline.titleMedium.copy(fontFamily = bodyFontFamily),
+      titleSmall = baseline.titleSmall.copy(fontFamily = bodyFontFamily),
       bodyLarge = baseline.bodyLarge.copy(fontFamily = bodyFontFamily),
       bodyMedium = baseline.bodyMedium.copy(fontFamily = bodyFontFamily),
       bodySmall = baseline.bodySmall.copy(fontFamily = bodyFontFamily),
@@ -124,7 +126,7 @@ val surfaceContainerDark = Color(0xFF261E18)
 val surfaceContainerHighDark = Color(0xFF312822)
 val surfaceContainerHighestDark = Color(0xFF3C332C)
 
-private val appLightScheme =
+val appLightScheme =
     lightColorScheme(
         primary = primaryLight,
         onPrimary = onPrimaryLight,
@@ -163,7 +165,7 @@ private val appLightScheme =
         surfaceContainerHighest = surfaceContainerHighestLight,
     )
 
-private val appDarkScheme =
+val appDarkScheme =
     darkColorScheme(
         primary = primaryDark,
         onPrimary = onPrimaryDark,
