@@ -1,33 +1,30 @@
 package org.example.project.presentation.util
 
-import androidx.compose.animation.core.EaseIn
-import androidx.compose.animation.core.EaseInCirc
-import androidx.compose.animation.core.EaseInOutQuad
-import androidx.compose.animation.core.EaseOut
-import androidx.compose.animation.core.EaseOutQuart
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCompositionContext
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.debugInspectorInfo
+import androidx.compose.ui.unit.Dp
+
 
 fun Modifier.bouncyClickable(
     onClick: () -> Unit = {},
@@ -58,5 +55,49 @@ fun Modifier.bouncyClickable(
                 true
             }
         }
+    }
+}
+
+fun Modifier.horizontalFadingEdge(
+    scrollState: ScrollState,
+    length: Dp,
+    edgeColor: Color? = null,
+) = composed(debugInspectorInfo {
+    name = "length"
+    value = length
+}) {
+    val color = edgeColor ?: MaterialTheme.colorScheme.surface
+    drawWithContent {
+        val lengthValue = length.toPx()
+        val scrollFromStart = scrollState.value
+        val scrollFromEnd = scrollState.maxValue - scrollState.value
+        val startFadingEdgeStrength = lengthValue * (scrollFromStart / lengthValue).coerceAtMost(1f)
+        val endFadingEdgeStrength = lengthValue * (scrollFromEnd / lengthValue).coerceAtMost(1f)
+        drawContent()
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    color,
+                    Color.Transparent,
+                ),
+                startX = 0f,
+                endX = startFadingEdgeStrength,
+            ),
+            size = Size(
+                startFadingEdgeStrength,
+                this.size.height,
+            ),
+        )
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    Color.Transparent,
+                    color,
+                ),
+                startX = size.width - endFadingEdgeStrength,
+                endX = size.width,
+            ),
+            topLeft = Offset(x = size.width - endFadingEdgeStrength, y = 0f),
+        )
     }
 }

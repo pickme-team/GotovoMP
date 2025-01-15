@@ -1,6 +1,7 @@
 package org.example.project.presentation.screens
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,17 +9,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -38,13 +36,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.example.project.presentation.util.bouncyClickable
+import org.example.project.presentation.util.horizontalFadingEdge
 
 @Composable
 fun PersonalScreen(modifier: Modifier = Modifier) {
@@ -74,9 +73,12 @@ private fun Section(title: String, modifier: Modifier = Modifier, icon: ImageVec
             }
             Text(text = title, style = MaterialTheme.typography.headlineSmall)
         }
-        val rowState = rememberLazyListState()
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp), state = rowState) {
-            items(items) {
+        val rowScrollState = rememberScrollState()
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.horizontalFadingEdge(
+            scrollState = rowScrollState,
+            length = 48.dp
+        ).horizontalScroll(rowScrollState)) {
+            items.forEach {
                 Recipe(title = it.first, imageUrl = it.second)
             }
         }
@@ -88,11 +90,12 @@ private fun Recipe(
     title: String, imageUrl: String, modifier: Modifier = Modifier
 ) {
     var isPopupOpen by rememberSaveable { mutableStateOf(false) }
+    val cardWidth = 192.dp
     Box(
-        modifier = modifier.width(160.dp).aspectRatio(0.8f)
+        modifier = modifier.width(cardWidth).aspectRatio(0.8f)
     ) {
         RecipeCard(title, imageUrl, onClick = { }, onHold = { isPopupOpen = true })
-        RecipeDropdown(isPopupOpen) { isPopupOpen = false }
+        RecipeDropdown(isPopupOpen = isPopupOpen, onDismissRequest = { isPopupOpen = false }, modifier = Modifier.width(cardWidth))
     }
 }
 
@@ -110,11 +113,13 @@ fun RecipeCard(title: String, imageUrl: String, onClick: () -> Unit, onHold: () 
     Box(
         modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart
     ) {
+        val fadeColor = MaterialTheme.colorScheme.run { if (!isSystemInDarkTheme()) onBackground else background }
+        val fadeInverse = MaterialTheme.colorScheme.run { if (isSystemInDarkTheme()) onBackground else background }
         AsyncImage(modifier = Modifier.fillMaxSize().drawWithContent {
             drawContent()
             drawRect(
                 brush = Brush.verticalGradient(
-                    0f to Color.Transparent, 0.85f to Color.Black.copy(alpha = 0.75f)
+                    0f to Color.Transparent, 0.85f to fadeColor.copy(0.75f)
                 )
             )
         },
@@ -124,17 +129,17 @@ fun RecipeCard(title: String, imageUrl: String, onClick: () -> Unit, onHold: () 
             onSuccess = { imageLoaded = true })
         Text(
             text = title,
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+            modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp),
             overflow = TextOverflow.Ellipsis,
             maxLines = 3,
-            style = MaterialTheme.typography.titleLarge.copy(lineBreak = LineBreak.Paragraph)
+            style = MaterialTheme.typography.headlineSmall.copy(lineBreak = LineBreak.Paragraph, color = fadeInverse, fontWeight = FontWeight.Black)
         )
     }
 }
 
 @Composable
-private fun RecipeDropdown(isPopupOpen: Boolean, onDismissRequest: () -> Unit) = DropdownMenu(
-    modifier = Modifier.width(160.dp),
+private fun RecipeDropdown(isPopupOpen: Boolean, onDismissRequest: () -> Unit, modifier: Modifier = Modifier) = DropdownMenu(
+    modifier = modifier,
     onDismissRequest = onDismissRequest,
     expanded = isPopupOpen,
     shape = MaterialTheme.shapes.medium,
