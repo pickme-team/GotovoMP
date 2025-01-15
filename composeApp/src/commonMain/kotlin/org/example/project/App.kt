@@ -57,6 +57,7 @@ fun App() {
                     selected,
                     icon = { Icon(if (selected) it.selectedIcon else it.unselectedIcon, null) },
                     label = { Text(it.title, style = MaterialTheme.typography.labelLarge) },
+                    alwaysShowLabel = false,
                     onClick = { navCtrl.navigate(it.route) })
               }
             }
