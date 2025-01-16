@@ -11,8 +11,10 @@ data class SignUpRequest(
     val password: String,
 )
 
-fun SignUpRequest.toSignInWithPhoneNumberRequest() =
-    SignInWithPhoneNumberRequest(phoneNumber, password)
+@Serializable
+data class SignInDTO(
+    val token: String
+)
 
 @Serializable
 data class SignInWithUsernameRequest(

@@ -1,5 +1,8 @@
 package org.example.project.data.network.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class RecipeDTO(
     val id: Long,
     val name: String,
@@ -9,6 +12,7 @@ data class RecipeDTO(
     val ingredients: List<Ingredient>,
 )
 
+@Serializable
 data class Ingredient(
     val id: Long,
     val name: String,

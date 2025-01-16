@@ -56,6 +56,10 @@ kotlin {
             implementation(libs.coil)
             implementation(libs.coil.network.ktor3)
             implementation(libs.coil.compose)
+
+            implementation(libs.multiplatform.settings)
+            implementation(libs.multiplatform.settings.coroutines)
+            implementation(libs.multiplatform.settings.no.arg)
         }
 
         nativeMain.dependencies {

@@ -5,18 +5,19 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.header
+import io.ktor.client.request.headers
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
-import io.ktor.serialization.kotlinx.KotlinxSerializationConverter
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.serialization.kotlinx.serialization
 import kotlinx.serialization.json.Json
+import org.example.project.data.local.settings.SettingsManager
 
-const val BASE_URL = "http://10.0.2.2:8080/"
+object Net {
+    private const val BASE_URL = "http://10.0.2.2:8080/"
 
-fun createHttpClient(): HttpClient {
-    return HttpClient {
+    val client = HttpClient {
         install(Logging) {
             level = LogLevel.BODY
         }
@@ -30,6 +31,11 @@ fun createHttpClient(): HttpClient {
         defaultRequest {
             contentType(ContentType.Application.Json)
             url(BASE_URL)
+            headers {
+                SettingsManager.token.takeIf { it.isNotBlank() }?.let {
+                    header("Authorization", "Bearer $it")
+                }
+            }
         }
         expectSuccess = true
     }
