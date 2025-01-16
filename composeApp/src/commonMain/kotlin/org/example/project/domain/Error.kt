@@ -24,11 +24,17 @@ suspend fun <T> wrap(block: suspend () -> T): DomainResult<T> = try {
     DomainResult.Error(t.toError())
 }
 
-fun <T> DomainResult<T>.unwrap(onSuccess: (T) -> Unit, onFailure: (DomainError) -> Unit) =
-    when (this) {
-        is DomainResult.Success -> onSuccess(value)
-        is DomainResult.Error -> onFailure(error)
-    }
+data class UnwrapChainMiddle<T>(
+    val result: DomainResult<T>,
+    val onSuccess: (T) -> Unit,
+)
+
+infix fun <T> DomainResult<T>.unwrap(block: (T) -> Unit) = UnwrapChainMiddle(this, block)
+
+infix fun <T> UnwrapChainMiddle<T>.otherwise(block: (DomainError) -> Unit) = when (this.result) {
+    is DomainResult.Success -> this.onSuccess(this.result.value)
+    is DomainResult.Error -> block(this.result.error)
+}
 
 private fun Throwable?.toError(): DomainError = when (this) {
     is ServerResponseException -> response.status.asNetworkError()

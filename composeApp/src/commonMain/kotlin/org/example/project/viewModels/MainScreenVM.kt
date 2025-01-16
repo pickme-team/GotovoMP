@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.domain.DomainError
+import org.example.project.domain.otherwise
 import org.example.project.domain.unwrap
 import org.example.project.network.ApiClient
 import org.example.project.network.createHttpClient
@@ -23,15 +24,11 @@ class FeedScreenVM(
     val state = _state.asStateFlow()
 
     private suspend fun fetchName() {
-        api.ping().unwrap(onSuccess = { res ->
-            _state.update {
-                it.copy(name = res.name)
-            }
-        }, onFailure = { err ->
-            when (err) {
-                is DomainError.NetworkError -> _state.update { it.copy(error = err) }
-            }
-        })
+        api.ping() unwrap { res ->
+            _state.update { it.copy(name = res.name) }
+        } otherwise { err ->
+            _state.update { it.copy(error = err) }
+        }
     }
 
     init {
