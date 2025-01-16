@@ -60,6 +60,6 @@ fun AvatarWithText(avatarUrl: String, name: String, surname: String, username: S
         overflow = TextOverflow.Ellipsis,
         maxLines = 2,
         style = MaterialTheme.typography.bodyLarge,
-        color = onSecondaryContainerLight)
+        color = MaterialTheme.colorScheme.onSecondaryContainer)
   }
 }

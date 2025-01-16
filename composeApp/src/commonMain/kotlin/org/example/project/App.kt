@@ -6,6 +6,7 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Label
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -48,17 +49,6 @@ fun App() {
     if (loggedIn) {
       val current = navCtrl.currentBackStackEntryAsState().value?.destination?.route
       Scaffold(
-          topBar = {
-            Nav.entries
-                .find { it.route == current }
-                ?.let {
-                  CenterAlignedTopAppBar(
-                      colors =
-                          TopAppBarDefaults.topAppBarColors()
-                              .copy(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                      title = { Text(it.title, style = MaterialTheme.typography.headlineMedium) })
-                }
-          },
           bottomBar = {
             BottomAppBar(containerColor = MaterialTheme.colorScheme.secondaryContainer) {
               Nav.entries.forEach {
@@ -66,6 +56,8 @@ fun App() {
                 NavigationBarItem(
                     selected,
                     icon = { Icon(if (selected) it.selectedIcon else it.unselectedIcon, null) },
+                    label = { Text(it.title, style = MaterialTheme.typography.labelLarge) },
+                    alwaysShowLabel = false,
                     onClick = { navCtrl.navigate(it.route) })
               }
             }
