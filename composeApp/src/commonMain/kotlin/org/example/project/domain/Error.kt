@@ -8,9 +8,13 @@ import kotlinx.io.IOException
 import kotlinx.serialization.SerializationException
 
 sealed interface DomainError {
-    enum class NetworkError : DomainError {
-        UNAUTHORIZED, NO_INTERNET, SERVER_ERROR, SERIALIZATION, UNKNOWN;
+    enum class NetworkClientError : DomainError {
+        NO_INTERNET, SERIALIZATION;
     }
+    enum class NetworkServerError : DomainError {
+        UNAUTHORIZED, SERVER_ERROR, CONFLICT;
+    }
+    data object Unknown : DomainError
 }
 
 sealed interface DomainResult<out T> {
@@ -18,9 +22,10 @@ sealed interface DomainResult<out T> {
     data class Error(val error: DomainError) : DomainResult<Nothing>
 }
 
-suspend fun <T> wrap(block: suspend () -> T): DomainResult<T> = try {
+suspend fun <T> wrap(logThrowable: Boolean = true, block: suspend () -> T): DomainResult<T> = try {
     DomainResult.Success(block())
 } catch (t: Throwable) {
+    if (logThrowable) t.printStackTrace()
     DomainResult.Error(t.toError())
 }
 
@@ -39,13 +44,14 @@ infix fun <T> UnwrapChainMiddle<T>.otherwise(block: (DomainError) -> Unit) = whe
 private fun Throwable?.toError(): DomainError = when (this) {
     is ServerResponseException -> response.status.asNetworkError()
     is ClientRequestException -> response.status.asNetworkError()
-    is SerializationException -> DomainError.NetworkError.SERIALIZATION
-    is UnresolvedAddressException, is IOException -> DomainError.NetworkError.NO_INTERNET
-    else -> DomainError.NetworkError.UNKNOWN
+    is SerializationException -> DomainError.NetworkClientError.SERIALIZATION
+    is UnresolvedAddressException, is IOException -> DomainError.NetworkClientError.NO_INTERNET
+    else -> DomainError.Unknown
 }
 
-private fun HttpStatusCode.asNetworkError(): DomainError.NetworkError = when (this) {
-    HttpStatusCode.Forbidden, HttpStatusCode.Unauthorized -> DomainError.NetworkError.UNAUTHORIZED
-    HttpStatusCode.InternalServerError -> DomainError.NetworkError.SERVER_ERROR
-    else -> DomainError.NetworkError.UNKNOWN
+private fun HttpStatusCode.asNetworkError(): DomainError = when (this) {
+    HttpStatusCode.Conflict -> DomainError.NetworkServerError.CONFLICT
+    HttpStatusCode.Forbidden, HttpStatusCode.Unauthorized -> DomainError.NetworkServerError.UNAUTHORIZED
+    HttpStatusCode.InternalServerError -> DomainError.NetworkServerError.SERVER_ERROR
+    else -> DomainError.Unknown
 }

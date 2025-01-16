@@ -26,7 +26,9 @@ fun FeedScreen(
         feedScreenVM.state.collectAsState().value.run {
             Text(name)
             if (error != null) when (error) {
-                is DomainError.NetworkError -> Text(error.name)
+                is DomainError.NetworkServerError -> Text(error.name)
+                is DomainError.NetworkClientError -> Text(error.name)
+                DomainError.Unknown -> Text("Unknown error")
             }
         }
     }

@@ -40,50 +40,55 @@ import org.example.project.viewModels.MainScreenVMState
 @Composable
 fun App() {
 
-  val navCtrl = rememberNavController()
-  val currentRoute = navCtrl.currentBackStackEntryAsState().value?.destination?.route
-  var loggedIn by remember { mutableStateOf(false) }
-  AppThemeConfiguration(
-      darkTheme = isSystemInDarkTheme(),
-      lightColors = appLightScheme,
-      darkColors = appDarkScheme,
-      typography = makeTypography(),
-  ) {
-    if (loggedIn) {
-      val current = navCtrl.currentBackStackEntryAsState().value?.destination?.route
-      Scaffold(
-          bottomBar = {
-            BottomAppBar(containerColor = MaterialTheme.colorScheme.secondaryContainer) {
-              Nav.entries.forEach {
-                val selected = current == it.route
-                NavigationBarItem(
-                    selected,
-                    icon = { Icon(if (selected) it.selectedIcon else it.unselectedIcon, null) },
-                    label = { Text(it.title, style = MaterialTheme.typography.labelLarge) },
-                    alwaysShowLabel = false,
-                    onClick = { navCtrl.navigate(it.route) {
-                        launchSingleTop = true
-                        restoreState = true
-                        popUpTo(
-                            navCtrl.graph.startDestinationRoute ?: return@navigate
-                        ) {
-                            saveState = true
-                        }
-                    } })
-              }
-            }
-          }) { innerPadding ->
-            NavHost(
-                modifier = Modifier.padding(innerPadding),
-                navController = navCtrl,
-                startDestination = Nav.FEED.route) {
-                  composable(Nav.FEED.route) { FeedScreen() }
-                  composable(Nav.MINE.route) { PersonalScreen() }
-                  composable(Nav.PROFILE.route) { ProfileScreen() }
+    val navCtrl = rememberNavController()
+    val currentRoute = navCtrl.currentBackStackEntryAsState().value?.destination?.route
+    var loggedIn by remember { mutableStateOf(false) }
+    AppThemeConfiguration(
+        darkTheme = isSystemInDarkTheme(),
+        lightColors = appLightScheme,
+        darkColors = appDarkScheme,
+        typography = makeTypography(),
+    ) {
+        if (loggedIn) {
+            val current = navCtrl.currentBackStackEntryAsState().value?.destination?.route
+            Scaffold(bottomBar = {
+                BottomAppBar(containerColor = MaterialTheme.colorScheme.secondaryContainer) {
+                    Nav.entries.forEach {
+                        val selected = current == it.route
+                        NavigationBarItem(selected, icon = {
+                            Icon(
+                                if (selected) it.selectedIcon else it.unselectedIcon, null
+                            )
+                        }, label = {
+                            Text(
+                                it.title, style = MaterialTheme.typography.labelLarge
+                            )
+                        }, alwaysShowLabel = false, onClick = {
+                            navCtrl.navigate(it.route) {
+                                launchSingleTop = true
+                                restoreState = true
+                                popUpTo(
+                                    navCtrl.graph.startDestinationRoute ?: return@navigate
+                                ) {
+                                    saveState = true
+                                }
+                            }
+                        })
+                    }
                 }
-          }
-    } else {
-      Scaffold { AuthScreen { loggedIn = true } }
+            }) { innerPadding ->
+                NavHost(
+                    modifier = Modifier.padding(innerPadding),
+                    navController = navCtrl,
+                    startDestination = Nav.FEED.route
+                ) {
+                    composable(Nav.FEED.route) { FeedScreen() }
+                    composable(Nav.MINE.route) { PersonalScreen() }
+                    composable(Nav.PROFILE.route) { ProfileScreen() }
+                }
+            }
+        } else {
+            Scaffold { AuthScreen(callback = { loggedIn = true }) }
+        }
     }
-  }
 }
