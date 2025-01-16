@@ -30,7 +30,7 @@ fun <T> DomainResult<T>.unwrap(onSuccess: (T) -> Unit, onFailure: (DomainError) 
         is DomainResult.Error -> onFailure(error)
     }
 
-fun Throwable?.toError(): DomainError = when (this) {
+private fun Throwable?.toError(): DomainError = when (this) {
     is ServerResponseException -> response.status.asNetworkError()
     is ClientRequestException -> response.status.asNetworkError()
     is SerializationException -> DomainError.NetworkError.SERIALIZATION
