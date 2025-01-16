@@ -10,17 +10,24 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.example.project.domain.DomainError
 import org.example.project.viewModels.FeedScreenVM
 
 @Composable
 fun FeedScreen(
-  feedScreenVM: FeedScreenVM
+    feedScreenVM: FeedScreenVM = viewModel<FeedScreenVM>()
 ) {
-  Column(
-    modifier = Modifier.fillMaxSize().padding(32.dp),
-    horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.Center
-  ) {
-    feedScreenVM.state.collectAsState().value.name?.let { Text(it) }
-  }
+    Column(
+        modifier = Modifier.fillMaxSize().padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        feedScreenVM.state.collectAsState().value.run {
+            Text(name)
+            if (error != null) when (error) {
+                is DomainError.NetworkError -> Text(error.name)
+            }
+        }
+    }
 }

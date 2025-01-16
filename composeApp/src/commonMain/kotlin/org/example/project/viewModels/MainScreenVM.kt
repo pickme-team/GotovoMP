@@ -6,31 +6,32 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.example.project.domain.DomainError
+import org.example.project.domain.unwrap
 import org.example.project.network.ApiClient
-import org.example.project.network.util.onSuccess
+import org.example.project.network.createHttpClient
 
 data class MainScreenVMState(
-    val name: String? = null
+    val name: String = "",
+    val error: DomainError? = null,
 )
 
 class FeedScreenVM(
-    private val api: ApiClient
-): ViewModel() {
+    private val api: ApiClient = ApiClient(createHttpClient())
+) : ViewModel() {
     private val _state = MutableStateFlow(MainScreenVMState())
     val state = _state.asStateFlow()
 
     private suspend fun fetchName() {
-        try {
-            api.ping().onSuccess {
-                _state.update { state ->
-                    state.copy(
-                        name = it
-                    )
-                }
+        api.ping().unwrap(onSuccess = { res ->
+            _state.update {
+                it.copy(name = res.name)
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        }, onFailure = { err ->
+            when (err) {
+                is DomainError.NetworkError -> _state.update { it.copy(error = err) }
+            }
+        })
     }
 
     init {
@@ -38,5 +39,4 @@ class FeedScreenVM(
             fetchName()
         }
     }
-
 }

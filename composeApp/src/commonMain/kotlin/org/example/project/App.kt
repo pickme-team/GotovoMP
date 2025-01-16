@@ -1,5 +1,7 @@
 package org.example.project
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomAppBar
@@ -13,7 +15,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -30,6 +34,7 @@ import org.example.project.presentation.util.appDarkScheme
 import org.example.project.presentation.util.appLightScheme
 import org.example.project.presentation.util.makeTypography
 import org.example.project.viewModels.FeedScreenVM
+import org.example.project.viewModels.MainScreenVMState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,8 +43,6 @@ fun App() {
   val navCtrl = rememberNavController()
   val currentRoute = navCtrl.currentBackStackEntryAsState().value?.destination?.route
   var loggedIn by remember { mutableStateOf(false) }
-  val api = ApiClient(createHttpClient())
-  val feedVM = FeedScreenVM(api)
   AppThemeConfiguration(
       darkTheme = isSystemInDarkTheme(),
       lightColors = appLightScheme,
@@ -58,7 +61,15 @@ fun App() {
                     icon = { Icon(if (selected) it.selectedIcon else it.unselectedIcon, null) },
                     label = { Text(it.title, style = MaterialTheme.typography.labelLarge) },
                     alwaysShowLabel = false,
-                    onClick = { navCtrl.navigate(it.route) })
+                    onClick = { navCtrl.navigate(it.route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo(
+                            navCtrl.graph.startDestinationRoute ?: return@navigate
+                        ) {
+                            saveState = true
+                        }
+                    } })
               }
             }
           }) { innerPadding ->
@@ -66,7 +77,7 @@ fun App() {
                 modifier = Modifier.padding(innerPadding),
                 navController = navCtrl,
                 startDestination = Nav.FEED.route) {
-                  composable(Nav.FEED.route) { FeedScreen(feedVM) }
+                  composable(Nav.FEED.route) { FeedScreen() }
                   composable(Nav.MINE.route) { PersonalScreen() }
                   composable(Nav.PROFILE.route) { ProfileScreen() }
                 }
