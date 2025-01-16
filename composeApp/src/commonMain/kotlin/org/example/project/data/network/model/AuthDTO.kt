@@ -1,4 +1,4 @@
-package org.example.project.data
+package org.example.project.data.network.model
 
 import kotlinx.serialization.Serializable
 

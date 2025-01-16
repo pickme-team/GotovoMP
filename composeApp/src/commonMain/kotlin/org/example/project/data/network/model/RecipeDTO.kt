@@ -1,7 +1,4 @@
-package org.example.project.data
-
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+package org.example.project.data.network.model
 
 data class RecipeDTO(
     val id: Long,

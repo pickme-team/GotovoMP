@@ -22,8 +22,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import org.example.project.network.ApiClient
-import org.example.project.network.createHttpClient
+import org.example.project.data.network.ApiClient
+import org.example.project.data.network.createHttpClient
 import org.example.project.presentation.screens.AuthScreen
 import org.example.project.presentation.screens.FeedScreen
 import org.example.project.presentation.screens.PersonalScreen
