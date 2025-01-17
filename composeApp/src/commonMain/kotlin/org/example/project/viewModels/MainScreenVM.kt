@@ -2,6 +2,8 @@ package org.example.project.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -25,8 +27,8 @@ class FeedScreenVM(
     private val _state = MutableStateFlow(MainScreenVMState())
     val state = _state.asStateFlow()
 
-    fun fetchRecipes() {
-        viewModelScope.launch {
+    private fun fetchRecipes() {
+        viewModelScope.launch(Dispatchers.IO) {
             SettingsManager.token.takeIf { it.isNotBlank() }?.let {
                 api.getRecipes() unwrap { res ->
                     _state.update { it.copy(recipes = res) }
@@ -38,8 +40,6 @@ class FeedScreenVM(
     }
 
     init {
-        viewModelScope.launch {
-            fetchRecipes()
-        }
+        fetchRecipes()
     }
 }

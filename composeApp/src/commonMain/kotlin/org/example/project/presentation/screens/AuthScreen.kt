@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ComposeNodeLifecycleCallback
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,13 +35,15 @@ import org.example.project.presentation.components.PhoneVisualTransformation
 import org.example.project.presentation.components.TextLine
 import org.example.project.viewModels.AuthVM
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(callback: () -> Unit, authVM: AuthVM = viewModel()) {
-    val error = authVM.state.collectAsState().value.error
+    val (checkedToken, error) = authVM.state.collectAsState().value
+    LaunchedEffect(Unit) {
+        authVM.checkSavedLogin(callback)
+    }
     var phoneNumber by remember { mutableStateOf(TextFieldValue()) }
     var password by remember { mutableStateOf(TextFieldValue()) }
-    Column(
+    if (checkedToken) Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
@@ -79,5 +84,7 @@ fun AuthScreen(callback: () -> Unit, authVM: AuthVM = viewModel()) {
         }
         Spacer(modifier = Modifier.size(128.dp))
         Spacer(modifier = Modifier.size(64.dp))
+    } else {
+        Surface() { CircularProgressIndicator() }
     }
 }

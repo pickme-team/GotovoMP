@@ -16,6 +16,7 @@ import org.example.project.data.network.ApiClient
 import org.example.project.data.network.Net
 
 data class AuthVMState(
+    val checkedForLogin: Boolean = false,
     val error: DomainError? = null
 )
 
@@ -24,6 +25,13 @@ class AuthVM(
 ): ViewModel() {
     private val _state = MutableStateFlow(AuthVMState())
     val state = _state.asStateFlow()
+
+    fun checkSavedLogin(callback: () -> Unit) {
+        if (SettingsManager.token.isNotBlank()) {
+            callback()
+        }
+        _state.update { it.copy(checkedForLogin = true) }
+    }
 
     fun tryRegister(signUpRequest: SignUpRequest, callback: () -> Unit) {
         viewModelScope.launch {
