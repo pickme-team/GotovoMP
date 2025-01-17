@@ -13,6 +13,7 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.example.project.data.local.settings.SettingsManager
+import org.example.project.nullIfBlank
 
 object Net {
     private const val BASE_URL = "http://10.0.2.2:8080/"
@@ -32,7 +33,7 @@ object Net {
             contentType(ContentType.Application.Json)
             url(BASE_URL)
             headers {
-                SettingsManager.token.takeIf { it.isNotBlank() }?.let {
+                SettingsManager.token.nullIfBlank()?.let {
                     header("Authorization", "Bearer $it")
                 }
             }

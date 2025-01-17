@@ -36,10 +36,10 @@ import org.example.project.presentation.components.TextLine
 import org.example.project.viewModels.AuthVM
 
 @Composable
-fun AuthScreen(callback: () -> Unit, authVM: AuthVM = viewModel()) {
+fun AuthScreen(authVM: AuthVM = viewModel()) {
     val (checkedToken, error) = authVM.state.collectAsState().value
     LaunchedEffect(Unit) {
-        authVM.checkSavedLogin(callback)
+        authVM.checkSavedLogin()
     }
     var phoneNumber by remember { mutableStateOf(TextFieldValue()) }
     var password by remember { mutableStateOf(TextFieldValue()) }
@@ -66,7 +66,6 @@ fun AuthScreen(callback: () -> Unit, authVM: AuthVM = viewModel()) {
             onValueChange = { password = it },
             visualTransformation = PasswordVisualTransformation()
         )
-        // Spacer(modifier = Modifier.size(16.dp))
         error?.let {
             when (it) {
                 DomainError.NetworkServerError.CONFLICT -> Text("User already exists")
@@ -76,7 +75,7 @@ fun AuthScreen(callback: () -> Unit, authVM: AuthVM = viewModel()) {
             }
         }
         Button(
-            onClick = { authVM.tryLogin(prefix + phoneNumber.text, password.text, callback) },
+            onClick = { authVM.tryLogin(prefix + phoneNumber.text, password.text) },
             colors = ButtonDefaults.buttonColors()
                 .copy(containerColor = MaterialTheme.colorScheme.primary)
         ) {

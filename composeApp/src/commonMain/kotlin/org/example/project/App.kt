@@ -22,7 +22,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.channels.consume
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.launch
 import org.example.project.data.network.ApiClient
+import org.example.project.domain.GlobalEvent
+import org.example.project.domain.UI
 import org.example.project.presentation.screens.AuthScreen
 import org.example.project.presentation.screens.FeedScreen
 import org.example.project.presentation.screens.PersonalScreen
@@ -38,10 +45,17 @@ import org.example.project.viewModels.MainScreenVMState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
-
     val navCtrl = rememberNavController()
-    val currentRoute = navCtrl.currentBackStackEntryAsState().value?.destination?.route
     var loggedIn by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    scope.launch {
+        UI.GlobalEventChannel.collect { event ->
+            loggedIn = when (event) {
+                GlobalEvent.Logout -> false
+                is GlobalEvent.Login -> true
+            }
+        }
+    }
     AppThemeConfiguration(
         darkTheme = isSystemInDarkTheme(),
         lightColors = appLightScheme,
@@ -87,7 +101,7 @@ fun App() {
                 }
             }
         } else {
-            Scaffold { AuthScreen(callback = { loggedIn = true }) }
+            Scaffold { AuthScreen() }
         }
     }
 }

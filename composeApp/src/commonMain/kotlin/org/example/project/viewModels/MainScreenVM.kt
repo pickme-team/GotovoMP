@@ -4,8 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.data.local.settings.SettingsManager
@@ -13,8 +16,12 @@ import org.example.project.domain.DomainError
 import org.example.project.data.network.ApiClient
 import org.example.project.data.network.Net
 import org.example.project.data.network.model.RecipeDTO
+import org.example.project.domain.GlobalEvent
+import org.example.project.domain.UI
 import org.example.project.domain.otherwise
 import org.example.project.domain.unwrap
+import org.example.project.nullIfBlank
+import org.example.project.presentation.screens.FeedScreen
 
 data class MainScreenVMState(
     val recipes: List<RecipeDTO> = emptyList(),
@@ -27,9 +34,13 @@ class FeedScreenVM(
     private val _state = MutableStateFlow(MainScreenVMState())
     val state = _state.asStateFlow()
 
+    init {
+        subscribeToGlobalEvents()
+    }
+
     private fun fetchRecipes() {
         viewModelScope.launch(Dispatchers.IO) {
-            SettingsManager.token.takeIf { it.isNotBlank() }?.let {
+            SettingsManager.token.nullIfBlank()?.let {
                 api.getRecipes() unwrap { res ->
                     _state.update { it.copy(recipes = res) }
                 } otherwise { err ->
@@ -39,7 +50,14 @@ class FeedScreenVM(
         }
     }
 
-    init {
-        fetchRecipes()
+    private fun subscribeToGlobalEvents() {
+        viewModelScope.launch {
+            UI.GlobalEventChannel.collect {
+                when (it) {
+                    GlobalEvent.Logout -> _state.update { MainScreenVMState() }
+                    is GlobalEvent.Login -> fetchRecipes()
+                }
+            }
+        }
     }
 }

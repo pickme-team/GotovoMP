@@ -11,6 +11,15 @@ data class SignUpRequest(
     val password: String,
 )
 
+
+@Serializable
+data class UserDTO(
+    val username: String,
+    val firstName: String?,
+    val lastName: String?,
+    val phoneNumber: String
+)
+
 @Serializable
 data class SignInDTO(
     val token: String

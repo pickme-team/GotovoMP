@@ -10,6 +10,7 @@ import com.russhwolf.settings.coroutines.toSuspendSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
+import kotlin.reflect.KProperty
 
 object SettingsManager {
     private val settings = Settings()
