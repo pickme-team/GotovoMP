@@ -41,10 +41,17 @@ class AuthVM(
         }
     }
 
-    fun tryRegister(fullUserDTO: SignUpRequest) {
+    fun tryRegister(firstName: String, lastName: String, username: String, phoneNumber: String, password: String) {
         viewModelScope.launch {
-            client.singUp(fullUserDTO) unwrap {
-                tryLogin(fullUserDTO.phoneNumber, fullUserDTO.password)
+            val request = SignUpRequest(
+                firstName = firstName,
+                lastName = lastName,
+                username = username,
+                phoneNumber = phoneNumber,
+                password = password
+            )
+            client.singUp(request) unwrap {
+                tryLogin(request.phoneNumber, request.password)
             } otherwise { err ->
                 _state.update { it.copy(error = err) }
             }
