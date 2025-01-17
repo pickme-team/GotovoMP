@@ -2,11 +2,8 @@ package org.example.project.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.data.local.settings.SettingsManager
@@ -32,13 +29,16 @@ class AuthVM(
     private val _state = MutableStateFlow(AuthVMState())
     val state = _state.asStateFlow()
 
+    init {
+        checkSavedLogin()
+    }
+
     fun checkSavedLogin() {
-        SettingsManager.token.nullIfBlank()?.let {
-            viewModelScope.launch {
-                UI.GlobalEventChannel.emit(GlobalEvent.Login)
-            }
+        viewModelScope.launch {
+            SettingsManager.token.nullIfBlank()?.let {
+                UI.GlobalEventFlow.emit(GlobalEvent.Login)
+            } ?: _state.update { it.copy(checkedForLogin = true) }
         }
-        _state.update { it.copy(checkedForLogin = true) }
     }
 
     fun tryRegister(fullUserDTO: SignUpRequest) {
@@ -55,10 +55,9 @@ class AuthVM(
         val scope = viewModelScope
         viewModelScope.launch {
             client.singIn(SignInWithPhoneNumberRequest(phoneNumber, password)) unwrap { res ->
-                println("Successful login with phone number $phoneNumber and password $password")
+                SettingsManager.token = res.token
                 scope.launch {
-                    SettingsManager.token = res.token
-                    UI.GlobalEventChannel.emit(GlobalEvent.Login)
+                    UI.GlobalEventFlow.emit(GlobalEvent.Login)
                 }
             } otherwise { err ->
                 _state.update { it.copy(error = err) }

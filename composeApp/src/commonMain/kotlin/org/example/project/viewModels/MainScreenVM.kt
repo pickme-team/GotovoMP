@@ -4,11 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.data.local.settings.SettingsManager
@@ -21,7 +18,6 @@ import org.example.project.domain.UI
 import org.example.project.domain.otherwise
 import org.example.project.domain.unwrap
 import org.example.project.nullIfBlank
-import org.example.project.presentation.screens.FeedScreen
 
 data class MainScreenVMState(
     val recipes: List<RecipeDTO> = emptyList(),
@@ -52,10 +48,10 @@ class FeedScreenVM(
 
     private fun subscribeToGlobalEvents() {
         viewModelScope.launch {
-            UI.GlobalEventChannel.collect {
+            UI.GlobalEventFlow.collect {
                 when (it) {
                     GlobalEvent.Logout -> _state.update { MainScreenVMState() }
-                    is GlobalEvent.Login -> fetchRecipes()
+                    GlobalEvent.Login -> fetchRecipes()
                 }
             }
         }

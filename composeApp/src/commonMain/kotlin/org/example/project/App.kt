@@ -1,33 +1,22 @@
 package org.example.project
 
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Label
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.channels.consume
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
-import org.example.project.data.network.ApiClient
 import org.example.project.domain.GlobalEvent
 import org.example.project.domain.UI
 import org.example.project.presentation.screens.AuthScreen
@@ -39,21 +28,18 @@ import org.example.project.presentation.util.Nav
 import org.example.project.presentation.util.appDarkScheme
 import org.example.project.presentation.util.appLightScheme
 import org.example.project.presentation.util.makeTypography
-import org.example.project.viewModels.FeedScreenVM
-import org.example.project.viewModels.MainScreenVMState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
     val navCtrl = rememberNavController()
     var loggedIn by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    scope.launch {
-        UI.GlobalEventChannel.collect { event ->
-            loggedIn = when (event) {
-                GlobalEvent.Logout -> false
-                is GlobalEvent.Login -> true
-            }
+    val lastEvent by UI.GlobalEventFlow.collectAsState(null)
+    LaunchedEffect(lastEvent) {
+        when (lastEvent) {
+            GlobalEvent.Logout -> loggedIn = false
+            GlobalEvent.Login -> loggedIn = true
+            null -> Unit
         }
     }
     AppThemeConfiguration(
