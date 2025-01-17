@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -44,7 +45,7 @@ fun AuthScreen(authVM: AuthVM = viewModel()) {
     var phoneNumber by remember { mutableStateOf(TextFieldValue()) }
     var password by remember { mutableStateOf(TextFieldValue()) }
     if (checkedToken) Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
     ) {
@@ -59,12 +60,16 @@ fun AuthScreen(authVM: AuthVM = viewModel()) {
             phoneNumber,
             onValueChange = { if (it.text.length <= maxLen) phoneNumber = it },
             visualTransformation = PhoneVisualTransformation(mask, maskNum),
-            prefix = "$prefix "
+            prefix = "$prefix ",
+            placeholderText = mask,
+            modifier = Modifier.fillMaxWidth()
         )
         TextLine(
             password,
             onValueChange = { password = it },
-            visualTransformation = PasswordVisualTransformation()
+            visualTransformation = PasswordVisualTransformation(),
+            placeholderText = "Пароль",
+            modifier = Modifier.fillMaxWidth()
         )
         error?.let {
             when (it) {
