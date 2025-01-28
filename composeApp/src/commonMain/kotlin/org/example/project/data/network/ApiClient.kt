@@ -7,6 +7,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
+import org.example.project.data.network.model.RecipeCreateRequest
 import org.example.project.data.network.model.RecipeDTO
 import org.example.project.data.network.model.SignInDTO
 import org.example.project.data.network.model.SignInWithPhoneNumberRequest
@@ -49,6 +50,13 @@ class ApiClient(
     suspend fun getRecipes(): DomainResult<List<RecipeDTO>> = wrap {
         httpClient.get {
             url("recipe/get")
+        }.body()
+    }
+
+    suspend fun addRecipe(body: RecipeCreateRequest): DomainResult<HttpResponse> = wrap {
+        httpClient.post {
+            setBody(body)
+            url("recipe/add")
         }.body()
     }
 }

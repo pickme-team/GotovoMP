@@ -21,3 +21,11 @@ data class Ingredient(
     val category: String,
     val additionalParameters: String,
 )
+
+@Serializable
+data class RecipeCreateRequest(
+    val name: String,
+    val text: String,
+    val tags: List<String>,
+    val ingredients: List<Ingredient>,
+)

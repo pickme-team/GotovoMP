@@ -34,24 +34,12 @@ class FeedScreenVM(
         subscribeToGlobalEvents()
     }
 
-    private fun fetchRecipes() {
-        viewModelScope.launch(Dispatchers.IO) {
-            SettingsManager.token.nullIfBlank()?.let {
-                api.getRecipes() unwrap { res ->
-                    _state.update { it.copy(recipes = res) }
-                } otherwise { err ->
-                    _state.update { it.copy(error = err) }
-                }
-            }
-        }
-    }
-
     private fun subscribeToGlobalEvents() {
         viewModelScope.launch {
             UI.GlobalEventFlow.collect {
                 when (it) {
                     GlobalEvent.Logout -> _state.update { MainScreenVMState() }
-                    GlobalEvent.Login -> fetchRecipes()
+                    else -> Unit
                 }
             }
         }

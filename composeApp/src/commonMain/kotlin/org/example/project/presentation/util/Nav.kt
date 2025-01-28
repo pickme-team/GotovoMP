@@ -14,8 +14,11 @@ import androidx.compose.material.icons.twotone.Home
 import androidx.compose.material.icons.twotone.Star
 import androidx.compose.ui.graphics.vector.ImageVector
 
-enum class Nav(val route: String, val selectedIcon: ImageVector, val unselectedIcon: ImageVector, val title: String) {
-    MINE("mine", Icons.Filled.Star, Icons.TwoTone.Star, "Мои Рецепты"),
-    FEED("main", Icons.Filled.Home, Icons.TwoTone.Home, "Лента"),
-    PROFILE("profile", Icons.Filled.AccountCircle, Icons.TwoTone.AccountCircle, "Профиль")
+data class NavIcon(val selectedIcon: ImageVector, val unselectedIcon: ImageVector)
+
+enum class Nav(val route: String, val icon: NavIcon?, val title: String) {
+    MINE("mine", NavIcon(Icons.Filled.Star, Icons.TwoTone.Star), "Мои Рецепты"),
+    FEED("main", NavIcon(Icons.Filled.Home, Icons.TwoTone.Home), "Лента"),
+    PROFILE("profile", NavIcon(Icons.Filled.AccountCircle, Icons.TwoTone.AccountCircle), "Профиль"),
+    CREATE("create", null, "Создать рецепт")
 }

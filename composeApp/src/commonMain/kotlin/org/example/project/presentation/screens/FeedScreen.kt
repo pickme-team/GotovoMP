@@ -31,7 +31,7 @@ fun FeedScreen(
         item { uiState.error?.let {
             Text(
                 when (it) {
-                    is DomainError.NetworkClientError -> "Client Erro"
+                    is DomainError.NetworkClientError -> "Client Error"
                     is DomainError.NetworkServerError -> "Server Error"
                     DomainError.Unknown -> "Unknown Error"
                 }
