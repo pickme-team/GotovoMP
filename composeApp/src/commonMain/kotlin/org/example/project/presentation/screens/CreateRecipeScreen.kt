@@ -65,7 +65,8 @@ fun CreateRecipeScreen(
         )
     }
     val listState = rememberLazyListState()
-    Box(modifier = Modifier.fillMaxSize()) {
+    val richTextState = rememberRichTextState()
+    Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(state = listState, verticalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(16.dp)) {
             item {
                 CenterAlignedTopAppBar(title = {
@@ -99,10 +100,9 @@ fun CreateRecipeScreen(
                 )
             }
             item {
-                val state = rememberRichTextState()
                 RichTextEditor(
                     modifier = Modifier.fillMaxWidth(),
-                    state = state,
+                    state = richTextState,
                     colors = RichTextEditorDefaults.richTextEditorColors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
@@ -112,10 +112,10 @@ fun CreateRecipeScreen(
                     shape = MaterialTheme.shapes.medium,
                     supportingText = { FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         MaterialTheme.typography.run {
-                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (state.currentSpanStyle.fontWeight == FontWeight.Bold) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { state.toggleSpanStyle(spanStyle = SpanStyle(fontWeight = FontWeight.Bold)) }) { Text("B", style = headlineSmall.copy(fontWeight = FontWeight.Bold)) }
-                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (state.currentSpanStyle.fontStyle == FontStyle.Italic) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { state.toggleSpanStyle(spanStyle = SpanStyle(fontStyle = FontStyle.Italic)) }) { Text("I", style = headlineSmall.copy(fontStyle = FontStyle.Italic)) }
-                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (state.currentSpanStyle.fontSize == headlineMedium.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { state.toggleSpanStyle(spanStyle = headlineMedium.toSpanStyle()) }) { Text("H1", style = headlineSmall) }
-                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (state.currentSpanStyle.fontSize == headlineSmall.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { state.toggleSpanStyle(spanStyle = headlineSmall.toSpanStyle()) }) { Text("H2", style = headlineSmall) }
+                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (richTextState.currentSpanStyle.fontWeight == FontWeight.Bold) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { richTextState.toggleSpanStyle(spanStyle = SpanStyle(fontWeight = FontWeight.Bold)) }) { Text("B", style = headlineSmall.copy(fontWeight = FontWeight.Bold)) }
+                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (richTextState.currentSpanStyle.fontStyle == FontStyle.Italic) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { richTextState.toggleSpanStyle(spanStyle = SpanStyle(fontStyle = FontStyle.Italic)) }) { Text("I", style = headlineSmall.copy(fontStyle = FontStyle.Italic)) }
+                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (richTextState.currentSpanStyle.fontSize == headlineMedium.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { richTextState.toggleSpanStyle(spanStyle = headlineMedium.toSpanStyle()) }) { Text("H1", style = headlineSmall) }
+                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (richTextState.currentSpanStyle.fontSize == headlineSmall.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { richTextState.toggleSpanStyle(spanStyle = headlineSmall.toSpanStyle()) }) { Text("H2", style = headlineSmall) }
                         }
                     } }
                 )
@@ -130,7 +130,9 @@ fun CreateRecipeScreen(
             if (it) {
                 Button(
                     modifier = Modifier.fillMaxWidth().height(ButtonDefaults.MinHeight * 1.25f),
-                    onClick = { viewModel.addRecipe(current, onCreated) },
+                    onClick = { viewModel.addRecipe(current.copy(
+                        text = richTextState.toMarkdown()
+                    ), onCreated) },
                     shape = MaterialTheme.shapes.medium
                 ) {
                     Text("Сохранить")
