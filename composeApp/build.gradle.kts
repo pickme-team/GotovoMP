@@ -60,6 +60,8 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.coroutines)
             implementation(libs.multiplatform.settings.no.arg)
+
+            implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc10")
         }
 
         nativeMain.dependencies {
