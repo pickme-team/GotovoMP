@@ -1,6 +1,5 @@
 package org.example.project.presentation.screens
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -33,7 +31,6 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,14 +48,11 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import org.example.project.data.network.model.RecipeDTO
 import org.example.project.presentation.util.Nav
 import org.example.project.presentation.util.bouncyClickable
-import org.example.project.presentation.util.horizontalFadingEdge
 import org.example.project.viewModels.PersonalVM
 
 private val images = listOf(
@@ -71,7 +65,7 @@ private val images = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonalScreen(navCtrl: NavHostController, modifier: Modifier = Modifier, viewModel: PersonalVM = viewModel()) {
+fun PersonalScreen(navCtrl: NavHostController, modifier: Modifier = Modifier, viewModel: PersonalVM) {
     val uiState by viewModel.state.collectAsState()
     PullToRefreshBox(
         modifier = modifier.fillMaxSize(),
@@ -80,7 +74,9 @@ fun PersonalScreen(navCtrl: NavHostController, modifier: Modifier = Modifier, vi
     ) {
         LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp)) {
             item {
-                Section(title = "Созданные мной", items = uiState.recipes.recipes, icon = Icons.Default.Favorite, actionButton = {
+                Section(title = "Созданные мной", items = uiState.recipes.recipes, icon = Icons.Default.Favorite, onClick = {
+                   navCtrl.navigate("${Nav.VIEW.route}/$it")
+                }, actionButton = {
                     SmallFloatingActionButton(onClick = { navCtrl.navigate(Nav.CREATE.route) }, elevation = FloatingActionButtonDefaults.elevation(
                         defaultElevation = 2.dp,
                         pressedElevation = 0.dp,
@@ -96,7 +92,7 @@ fun PersonalScreen(navCtrl: NavHostController, modifier: Modifier = Modifier, vi
 }
 
 @Composable
-private fun Section(title: String, items: List<RecipeDTO>, modifier: Modifier = Modifier, icon: ImageVector? = null, actionButton: (@Composable () -> Unit)? = null) {
+private fun Section(title: String, items: List<RecipeDTO>, onClick: (Long) -> Unit, modifier: Modifier = Modifier, icon: ImageVector? = null, actionButton: (@Composable () -> Unit)? = null) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -113,7 +109,7 @@ private fun Section(title: String, items: List<RecipeDTO>, modifier: Modifier = 
         val rowScrollState = rememberLazyListState()
         LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp), state = rowScrollState, contentPadding = PaddingValues(horizontal = 24.dp)) {
             items(items, key = { it.id }) {
-                Recipe(title = it.name, imageUrl = images.random())
+                Recipe(title = it.name, imageUrl = images.random(), onClick = { onClick(it.id) })
             }
         }
     }
@@ -121,14 +117,14 @@ private fun Section(title: String, items: List<RecipeDTO>, modifier: Modifier = 
 
 @Composable
 private fun Recipe(
-    title: String, imageUrl: String, modifier: Modifier = Modifier
+    title: String, imageUrl: String, modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     var isPopupOpen by rememberSaveable { mutableStateOf(false) }
     val cardWidth = 192.dp
     Box(
         modifier = modifier.width(cardWidth).aspectRatio(0.8f)
     ) {
-        RecipeCard(title, imageUrl, onClick = { }, onHold = { isPopupOpen = true })
+        RecipeCard(title, imageUrl, onClick = onClick, onHold = { isPopupOpen = true })
         RecipeDropdown(isPopupOpen = isPopupOpen, onDismissRequest = { isPopupOpen = false }, modifier = Modifier.width(cardWidth))
     }
 }

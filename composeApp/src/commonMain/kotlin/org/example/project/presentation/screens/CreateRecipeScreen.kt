@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mohamedrejeb.richeditor.model.RichSpanStyle
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
@@ -48,14 +49,12 @@ import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import org.example.project.data.network.model.RecipeCreateRequest
 import org.example.project.viewModels.PersonalVM
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
-    ExperimentalMaterialApi::class
-)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun CreateRecipeScreen(
     onCreated: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: PersonalVM = viewModel(),
+    viewModel: PersonalVM,
 ) {
     var current by remember {
         mutableStateOf(

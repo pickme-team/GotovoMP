@@ -26,6 +26,7 @@ import org.example.project.presentation.screens.CreateRecipeScreen
 import org.example.project.presentation.screens.FeedScreen
 import org.example.project.presentation.screens.PersonalScreen
 import org.example.project.presentation.screens.ProfileScreen
+import org.example.project.presentation.screens.ViewRecipeScreen
 import org.example.project.presentation.util.AppThemeConfiguration
 import org.example.project.presentation.util.Nav
 import org.example.project.presentation.util.appDarkScheme
@@ -94,6 +95,12 @@ fun App() {
                     composable(Nav.FEED.route) { FeedScreen() }
                     composable(Nav.MINE.route) { PersonalScreen(navCtrl, viewModel = personalVM) }
                     composable(Nav.PROFILE.route) { ProfileScreen() }
+                    composable(Nav.VIEW.route + "/{id}") {
+                        val recipeId = it.arguments?.getString("id")?.toLong()
+                        if (recipeId != null) {
+                            ViewRecipeScreen(recipeId, onBack = { navCtrl.navigateUp() }, viewModel = personalVM)
+                        }
+                    }
                     composable(Nav.CREATE.route) { CreateRecipeScreen(onCreated = { navCtrl.navigateUp() }, viewModel = personalVM) }
                 }
             }
