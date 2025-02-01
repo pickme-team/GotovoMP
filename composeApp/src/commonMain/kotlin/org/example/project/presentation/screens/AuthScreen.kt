@@ -2,6 +2,8 @@ package org.example.project.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -66,26 +68,67 @@ fun AuthScreen(authVM: AuthVM = viewModel()) {
 }
 
 @Composable
+private fun AuthColumn(
+    topText: String,
+    left: Pair<String, () -> Unit>,
+    right: Pair<String, () -> Unit>,
+    error: DomainError?,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Column(
+        modifier = modifier.fillMaxSize().padding(horizontal = 48.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
+    ) {
+        Column(modifier = Modifier.padding(bottom = 8.dp)) {
+            Text(topText, style = MaterialTheme.typography.headlineSmall)
+            Text("GovnoMP", style = MaterialTheme.typography.displayMedium)
+        }
+        content()
+        error?.let {
+            when (it) {
+                DomainError.NetworkServerError.CONFLICT -> Text("User already exists")
+                is DomainError.NetworkServerError -> Text("Server Error")
+                is DomainError.NetworkClientError -> Text("Client Error")
+                DomainError.Unknown -> Text("Unknown error")
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = left.second, shape = MaterialTheme.shapes.medium) {
+                Text(left.first) // TODO res
+            }
+            Button(
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.weight(1f),
+                onClick = right.second,
+                colors = ButtonDefaults.buttonColors()
+                    .copy(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(right.first) // TODO res
+            }
+        }
+    }
+}
+
+@Composable
 private fun LoginWithPhone(
     error: DomainError?,
     toRegister: () -> Unit,
-    modifier: Modifier = Modifier,
     authVM: AuthVM = viewModel(),
 ) {
     var phoneNumber by remember { mutableStateOf(TextFieldValue()) }
     var password by remember { mutableStateOf(TextFieldValue()) }
-    Column(
-        modifier = modifier.fillMaxSize().padding(horizontal = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
+    val mask = "000 000 00 00"
+    val maxLen = mask.count { it != ' ' }
+    val maskNum = '0'
+    val prefix = "+7"
+    AuthColumn(
+        topText = "Вход в",
+        left = "Регистрация" to toRegister,
+        right = "Продолжить" to { authVM.tryLogin(prefix + phoneNumber.text, password.text) },
+        error = error,
     ) {
-        Text("GovnoMP", style = MaterialTheme.typography.displayMedium)
-        Spacer(modifier = Modifier.size(128.dp))
-        Text("Введите номер телефона", style = MaterialTheme.typography.bodyLarge)
-        val mask = "000 000 00 00"
-        val maxLen = mask.count { it != ' ' }
-        val maskNum = '0'
-        val prefix = "+7"
         TextLine(
             phoneNumber,
             onValueChange = { if (it.text.length <= maxLen) phoneNumber = it },
@@ -101,24 +144,6 @@ private fun LoginWithPhone(
             placeholderText = "Пароль",
             modifier = Modifier.fillMaxWidth()
         )
-        error?.let {
-            when (it) {
-                DomainError.NetworkServerError.CONFLICT -> Text("User already exists")
-                is DomainError.NetworkServerError -> Text("Server Error")
-                is DomainError.NetworkClientError -> Text("Client Error")
-                DomainError.Unknown -> Text("Unknown error")
-            }
-        }
-        Button(
-            onClick = { authVM.tryLogin(prefix + phoneNumber.text, password.text) },
-            colors = ButtonDefaults.buttonColors()
-                .copy(containerColor = MaterialTheme.colorScheme.primary)
-        ) {
-            Text("Продолжить") // TODO res
-        }
-        OutlinedButton(onClick = toRegister) {
-            Text("Регистрация") // TODO res
-        }
     }
 }
 
@@ -126,7 +151,6 @@ private fun LoginWithPhone(
 private fun Register(
     error: DomainError?,
     toLogin: () -> Unit,
-    modifier: Modifier = Modifier,
     authVM: AuthVM = viewModel(),
 ) {
     var firstName by remember { mutableStateOf(TextFieldValue()) }
@@ -137,13 +161,12 @@ private fun Register(
     LaunchedEffect(Triple(firstName, lastName, username), Pair(phoneNumber, password)) {
         authVM.resetError()
     }
-    Column(
-        modifier = modifier.fillMaxSize().padding(horizontal = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
+    AuthColumn(
+        topText = "Регистрация в",
+        left = "Вход" to toLogin,
+        right = "Продолжить" to { authVM.tryRegister(firstName.text, lastName.text, username.text, phoneNumber.text, password.text) },
+        error = error
     ) {
-        Text("GovnoMP", style = MaterialTheme.typography.displayMedium)
-        Spacer(modifier = Modifier.height(128.dp))
         TextLine(
             firstName,
             onValueChange = { firstName = it },
@@ -181,23 +204,5 @@ private fun Register(
             placeholderText = "Пароль",
             modifier = Modifier.fillMaxWidth()
         )
-        error?.let {
-            when (it) {
-                DomainError.NetworkServerError.CONFLICT -> Text("User already exists")
-                is DomainError.NetworkServerError -> Text("Server Error")
-                is DomainError.NetworkClientError -> Text("Client Error")
-                DomainError.Unknown -> Text("Unknown error")
-            }
-        }
-        Button(
-            onClick = { authVM.tryRegister(firstName.text, lastName.text, username.text, prefix + phoneNumber.text, password.text) },
-            colors = ButtonDefaults.buttonColors()
-                .copy(containerColor = MaterialTheme.colorScheme.primary)
-        ) {
-            Text("Продолжить") // TODO res
-        }
-        OutlinedButton(onClick = toLogin) {
-            Text("Вход") // TODO res
-        }
     }
 }
