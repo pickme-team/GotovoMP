@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,6 +36,8 @@ import org.example.project.presentation.components.TextLine
 import org.example.project.viewModels.AuthVM
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -45,6 +48,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 
@@ -77,7 +82,7 @@ private fun AuthColumn(
     content: @Composable () -> Unit,
 ) {
     Column(
-        modifier = modifier.fillMaxSize().padding(horizontal = 48.dp),
+        modifier = modifier.fillMaxSize().padding(horizontal = 48.dp).windowInsetsPadding(WindowInsets.ime),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
@@ -123,14 +128,21 @@ private fun LoginWithPhone(
     val maxLen = mask.count { it != ' ' }
     val maskNum = '0'
     val prefix = "+7"
+    val action = { authVM.tryLogin(prefix + phoneNumber.text, password.text) }
+    val fm = LocalFocusManager.current
+    var lastFocused by remember { mutableStateOf(false) }
+    val kbdActions = KeyboardActions {
+        if (!lastFocused) fm.moveFocus(FocusDirection.Down) else action()
+    }
     AuthColumn(
         topText = "Вход в",
         left = "Регистрация" to toRegister,
-        right = "Продолжить" to { authVM.tryLogin(prefix + phoneNumber.text, password.text) },
+        right = "Продолжить" to action,
         error = error,
     ) {
         TextLine(
             phoneNumber,
+            keyboardActions = kbdActions,
             onValueChange = { if (it.text.length <= maxLen) phoneNumber = it },
             visualTransformation = PhoneVisualTransformation(mask, maskNum),
             prefix = "$prefix ",
@@ -139,10 +151,13 @@ private fun LoginWithPhone(
         )
         TextLine(
             password,
+            keyboardActions = kbdActions,
             onValueChange = { password = it },
             visualTransformation = PasswordVisualTransformation(),
             placeholderText = "Пароль",
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().onFocusChanged {
+                lastFocused = it.isFocused
+            }
         )
     }
 }
@@ -158,29 +173,38 @@ private fun Register(
     var username by remember { mutableStateOf(TextFieldValue()) }
     var phoneNumber by remember { mutableStateOf(TextFieldValue()) }
     var password by remember { mutableStateOf(TextFieldValue()) }
+    val action = { authVM.tryRegister(firstName.text, lastName.text, username.text, phoneNumber.text, password.text) }
+    var lastFocused by remember { mutableStateOf(false) }
+    val fm = LocalFocusManager.current
+    val kbdActions = KeyboardActions {
+        if (!lastFocused) fm.moveFocus(FocusDirection.Down) else action()
+    }
     LaunchedEffect(Triple(firstName, lastName, username), Pair(phoneNumber, password)) {
         authVM.resetError()
     }
     AuthColumn(
         topText = "Регистрация в",
         left = "Вход" to toLogin,
-        right = "Продолжить" to { authVM.tryRegister(firstName.text, lastName.text, username.text, phoneNumber.text, password.text) },
+        right = "Продолжить" to action,
         error = error
     ) {
         TextLine(
             firstName,
+            keyboardActions = kbdActions,
             onValueChange = { firstName = it },
             placeholderText = "Имя",
             modifier = Modifier.fillMaxWidth()
         )
         TextLine(
             lastName,
+            keyboardActions = kbdActions,
             onValueChange = { lastName = it },
             placeholderText = "Фамилия",
             modifier = Modifier.fillMaxWidth()
         )
         TextLine(
             username,
+            keyboardActions = kbdActions,
             onValueChange = { username = it },
             placeholderText = "Логин",
             modifier = Modifier.fillMaxWidth()
@@ -193,6 +217,7 @@ private fun Register(
             phoneNumber,
             onValueChange = { if (it.text.length <= maxLen) phoneNumber = it },
             visualTransformation = PhoneVisualTransformation(mask, maskNum),
+            keyboardActions = kbdActions,
             prefix = "$prefix ",
             placeholderText = mask,
             modifier = Modifier.fillMaxWidth()
@@ -200,9 +225,12 @@ private fun Register(
         TextLine(
             password,
             onValueChange = { password = it },
+            keyboardActions = kbdActions,
             visualTransformation = PasswordVisualTransformation(),
             placeholderText = "Пароль",
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().onFocusChanged {
+                lastFocused = it.isFocused
+            }
         )
     }
 }

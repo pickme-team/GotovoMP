@@ -43,7 +43,6 @@ fun TextLine(
     placeholder: (@Composable () -> Unit)? = null,
     placeholderText: String = "Placeholder",
     prefix: String? = null,
-
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -58,6 +57,7 @@ fun TextLine(
   val animColor = primary.copy(animProgress).compositeOver(surfaceBright)
   BasicTextField(
       enabled = enabled,
+      singleLine = true,
       keyboardOptions = keyboardOptions,
       keyboardActions = keyboardActions,
       visualTransformation = visualTransformation,
