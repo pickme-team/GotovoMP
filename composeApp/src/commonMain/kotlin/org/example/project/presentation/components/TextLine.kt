@@ -43,14 +43,13 @@ fun TextLine(
     placeholder: (@Composable () -> Unit)? = null,
     placeholderText: String = "Placeholder",
     prefix: String? = null,
-
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     modifier: Modifier = Modifier
 ) {
   var isFocused by remember { mutableStateOf(false) }
-  val surfaceBright = MaterialTheme.colorScheme.primary
+  val surfaceBright = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f)
   val primary = MaterialTheme.colorScheme.primary
   val animProgress by
       animateFloatAsState(
@@ -58,11 +57,12 @@ fun TextLine(
   val animColor = primary.copy(animProgress).compositeOver(surfaceBright)
   BasicTextField(
       enabled = enabled,
+      singleLine = true,
       keyboardOptions = keyboardOptions,
       keyboardActions = keyboardActions,
       visualTransformation = visualTransformation,
       modifier =
-          modifier.padding(vertical = 12.dp).height(48.dp).onFocusChanged {
+          modifier.height(48.dp).onFocusChanged {
             isFocused = it.isFocused
           },
       textStyle =
@@ -77,13 +77,13 @@ fun TextLine(
                 Modifier.drawWithContent {
                   drawRect(
                       Brush.linearGradient(
-                          0f to surfaceBright, 0.85f to surfaceBright, 1f to Color.Transparent),
-                      topLeft = Offset(0f, size.height - 1.dp.toPx()),
+                          0f to surfaceBright, 0.75f to surfaceBright, 1f to Color.Transparent),
+                      topLeft = Offset(0f, size.height - 6.dp.toPx()),
                       size = Size(size.width, 2.dp.toPx()))
                   drawRect(
                       Brush.linearGradient(
                           0f to animColor, animProgress to animColor, 1f to Color.Transparent),
-                      topLeft = Offset(0f, size.height - 1.dp.toPx()),
+                      topLeft = Offset(0f, size.height - 6.dp.toPx()),
                       size = Size(size.width, 3.dp.toPx()))
                   drawContent()
                 }) {
