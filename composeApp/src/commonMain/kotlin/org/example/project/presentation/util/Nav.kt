@@ -20,5 +20,6 @@ enum class Nav(val route: String, val icon: NavIcon?, val title: String) {
     MINE("mine", NavIcon(Icons.Filled.Star, Icons.TwoTone.Star), "Мои Рецепты"),
     FEED("main", NavIcon(Icons.Filled.Home, Icons.TwoTone.Home), "Лента"),
     PROFILE("profile", NavIcon(Icons.Filled.AccountCircle, Icons.TwoTone.AccountCircle), "Профиль"),
-    CREATE("create", null, "Создать рецепт")
+    CREATE("create", null, "Создать рецепт"),
+    VIEW("view", null, "Просмотр рецепта"),
 }
