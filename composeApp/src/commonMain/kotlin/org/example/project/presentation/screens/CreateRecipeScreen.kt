@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -41,6 +43,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
@@ -64,7 +67,11 @@ fun CreateRecipeScreen(
             )
         )
     }
-    var steps = SnapshotStateList<String>()
+    val steps by remember { mutableStateOf(
+        SnapshotStateList<RichTextState>()
+    ) }
+    val empty = rememberRichTextState()
+    var focusIndex by remember { mutableStateOf<Int?>(null) }
     val listState = rememberLazyListState()
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -100,30 +107,27 @@ fun CreateRecipeScreen(
                     )
                 )
             }
-            steps.forEach { text ->
-                item {
-                    val richTextState = rememberRichTextState()
-                    StepTextField(richTextState)
+            itemsIndexed(steps) { index, state ->
+                StepTextField(state, focusIndex == index) {
+                    if (it) { focusIndex = index }
                 }
             }
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().height(32.dp)
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Button(
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        modifier = Modifier.weight(1f),
                         onClick = {
-                            steps.add(" ")
+                            steps.add(empty.copy())
                             println(steps)
                         }
                     ) {
                         Text("Добавить шаг")
                     }
-
-                    Spacer(Modifier.width(8.dp))
-
                     Button(
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        modifier = Modifier.weight(1f),
                         onClick = {}
                     ) {
                         Text("Добавить фото")
@@ -142,10 +146,10 @@ fun CreateRecipeScreen(
             if (it) {
                 Button(
                     modifier = Modifier.fillMaxWidth().height(ButtonDefaults.MinHeight * 1.25f),
-//                    onClick = { viewModel.addRecipe(current.copy(
-//                        text = richTextState.toMarkdown()
-//                    ), onCreated) },
-                    onClick = {},
+                    onClick = {
+                        val merged = steps.map { step -> step.toMarkdown() }.reduce { a, b -> "$a\n$b" }
+                        viewModel.addRecipe(current.copy(text = merged), onCreated)
+                    },
                     shape = MaterialTheme.shapes.medium
                 ) {
                     Text("Сохранить")
