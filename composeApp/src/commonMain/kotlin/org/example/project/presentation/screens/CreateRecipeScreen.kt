@@ -108,9 +108,12 @@ fun CreateRecipeScreen(
                 )
             }
             itemsIndexed(steps) { index, state ->
-                StepTextField(state, focusIndex == index) {
-                    if (it) { focusIndex = index }
-                }
+                StepTextField(
+                    richTextState = state, onRemove = { steps.removeAt(index) },
+                    isFocused = focusIndex == index, changeFocus = {
+                        if (it) { focusIndex = index }
+                    }
+                )
             }
             item {
                 Row(

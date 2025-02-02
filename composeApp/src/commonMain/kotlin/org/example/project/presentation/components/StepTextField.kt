@@ -3,17 +3,24 @@ package org.example.project.presentation.components
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -29,72 +36,78 @@ import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 fun StepTextField(
     richTextState: RichTextState,
+    onRemove: () -> Unit,
     isFocused: Boolean,
     changeFocus: (Boolean) -> Unit
 ) {
-    RichTextEditor(
-        modifier = Modifier.fillMaxWidth().onFocusChanged {
-            changeFocus(it.isFocused)
-        },
-        state = richTextState,
-        colors = RichTextEditorDefaults.richTextEditorColors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent
-        ),
-        minLines = 5,
-        shape = MaterialTheme.shapes.medium,
-        supportingText = {
-            AnimatedVisibility(isFocused) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MaterialTheme.typography.run {
-                        Button(
-                            contentPadding = PaddingValues(4.dp),
-                            shape = MaterialTheme.shapes.medium,
-                            colors = if (richTextState.currentSpanStyle.fontWeight == FontWeight.Bold)
-                                ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
-                            onClick = {
-                                richTextState.toggleSpanStyle(
-                                    spanStyle = SpanStyle(
-                                        fontWeight = FontWeight.Bold
+    Box(Modifier.fillMaxWidth()) {
+        RichTextEditor(
+            modifier = Modifier.fillMaxSize().onFocusChanged {
+                changeFocus(it.isFocused)
+            },
+            state = richTextState,
+            colors = RichTextEditorDefaults.richTextEditorColors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
+            ),
+            minLines = 5,
+            shape = MaterialTheme.shapes.medium,
+            supportingText = {
+                AnimatedVisibility(isFocused) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        MaterialTheme.typography.run {
+                            Button(
+                                contentPadding = PaddingValues(4.dp),
+                                shape = MaterialTheme.shapes.medium,
+                                colors = if (richTextState.currentSpanStyle.fontWeight == FontWeight.Bold)
+                                    ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
+                                onClick = {
+                                    richTextState.toggleSpanStyle(
+                                        spanStyle = SpanStyle(
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     )
+                                })
+                            { Text("B", style = headlineSmall.copy(fontWeight = FontWeight.Bold)) }
+                            Button(
+                                contentPadding = PaddingValues(4.dp),
+                                shape = MaterialTheme.shapes.medium,
+                                colors = if (richTextState.currentSpanStyle.fontStyle == FontStyle.Italic) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
+                                onClick = {
+                                    richTextState.toggleSpanStyle(spanStyle = SpanStyle(fontStyle = FontStyle.Italic))
+                                }) {
+                                Text(
+                                    "I",
+                                    style = headlineSmall.copy(fontStyle = FontStyle.Italic)
                                 )
-                            })
-                        { Text("B", style = headlineSmall.copy(fontWeight = FontWeight.Bold)) }
-                        Button(
-                            contentPadding = PaddingValues(4.dp),
-                            shape = MaterialTheme.shapes.medium,
-                            colors = if (richTextState.currentSpanStyle.fontStyle == FontStyle.Italic) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
-                            onClick = {
-                                richTextState.toggleSpanStyle(spanStyle = SpanStyle(fontStyle = FontStyle.Italic))
-                            }) {
-                            Text(
-                                "I",
-                                style = headlineSmall.copy(fontStyle = FontStyle.Italic)
-                            )
-                        }
-                        Button(
-                            contentPadding = PaddingValues(4.dp),
-                            shape = MaterialTheme.shapes.medium,
-                            colors = if (richTextState.currentSpanStyle.fontSize == headlineMedium.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
-                            onClick = { richTextState.toggleSpanStyle(spanStyle = headlineMedium.toSpanStyle()) }) {
-                            Text(
-                                "H1",
-                                style = headlineSmall
-                            )
-                        }
-                        Button(
-                            contentPadding = PaddingValues(4.dp),
-                            shape = MaterialTheme.shapes.medium,
-                            colors = if (richTextState.currentSpanStyle.fontSize == headlineSmall.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
-                            onClick = { richTextState.toggleSpanStyle(spanStyle = headlineSmall.toSpanStyle()) }) {
-                            Text(
-                                "H2",
-                                style = headlineSmall
-                            )
+                            }
+                            Button(
+                                contentPadding = PaddingValues(4.dp),
+                                shape = MaterialTheme.shapes.medium,
+                                colors = if (richTextState.currentSpanStyle.fontSize == headlineMedium.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
+                                onClick = { richTextState.toggleSpanStyle(spanStyle = headlineMedium.toSpanStyle()) }) {
+                                Text(
+                                    "H1",
+                                    style = headlineSmall
+                                )
+                            }
+                            Button(
+                                contentPadding = PaddingValues(4.dp),
+                                shape = MaterialTheme.shapes.medium,
+                                colors = if (richTextState.currentSpanStyle.fontSize == headlineSmall.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
+                                onClick = { richTextState.toggleSpanStyle(spanStyle = headlineSmall.toSpanStyle()) }) {
+                                Text(
+                                    "H2",
+                                    style = headlineSmall
+                                )
+                            }
                         }
                     }
-                }
-            } }
-    )
+                } }
+        )
+        IconButton(onClick = onRemove, modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)) {
+            Icon(Icons.Default.Close, contentDescription = "remove item")
+        }
+    }
 }
