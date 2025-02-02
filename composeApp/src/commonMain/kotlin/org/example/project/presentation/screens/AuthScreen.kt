@@ -3,6 +3,8 @@ package org.example.project.presentation.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -72,6 +74,7 @@ fun AuthScreen(authVM: AuthVM = viewModel()) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AuthColumn(
     topText: String,
@@ -82,7 +85,7 @@ private fun AuthColumn(
     content: @Composable () -> Unit,
 ) {
     Column(
-        modifier = modifier.fillMaxSize().padding(horizontal = 48.dp).windowInsetsPadding(WindowInsets.ime),
+        modifier = modifier.fillMaxSize().padding(horizontal = 32.dp).windowInsetsPadding(WindowInsets.ime),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
@@ -99,7 +102,7 @@ private fun AuthColumn(
                 DomainError.Unknown -> Text("Unknown error")
             }
         }
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth(), ) {
             OutlinedButton(onClick = left.second, shape = MaterialTheme.shapes.medium) {
                 Text(left.first) // TODO res
             }
