@@ -3,18 +3,21 @@ package org.example.project.presentation.screens
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Chip
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -32,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,14 +43,14 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mohamedrejeb.richeditor.model.RichSpanStyle
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
-import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorColors
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.example.project.data.network.model.RecipeCreateRequest
+import org.example.project.presentation.components.StepTextField
+import org.example.project.presentation.util.StepState
 import org.example.project.viewModels.PersonalVM
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -63,8 +67,13 @@ fun CreateRecipeScreen(
             )
         )
     }
+    val steps by remember { mutableStateOf(
+        SnapshotStateList<Pair<String, RichTextState>>()
+    ) }
+    val empty = rememberRichTextState()
+    var focusIndex by remember { mutableStateOf<Int?>(null) }
     val listState = rememberLazyListState()
-    val richTextState = rememberRichTextState()
+
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(state = listState, verticalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(16.dp)) {
             item {
@@ -98,27 +107,38 @@ fun CreateRecipeScreen(
                     )
                 )
             }
-            item {
-                RichTextEditor(
-                    modifier = Modifier.fillMaxWidth(),
-                    state = richTextState,
-                    colors = RichTextEditorDefaults.richTextEditorColors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
-                    minLines = 5,
-                    shape = MaterialTheme.shapes.medium,
-                    supportingText = { FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        MaterialTheme.typography.run {
-                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (richTextState.currentSpanStyle.fontWeight == FontWeight.Bold) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { richTextState.toggleSpanStyle(spanStyle = SpanStyle(fontWeight = FontWeight.Bold)) }) { Text("B", style = headlineSmall.copy(fontWeight = FontWeight.Bold)) }
-                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (richTextState.currentSpanStyle.fontStyle == FontStyle.Italic) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { richTextState.toggleSpanStyle(spanStyle = SpanStyle(fontStyle = FontStyle.Italic)) }) { Text("I", style = headlineSmall.copy(fontStyle = FontStyle.Italic)) }
-                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (richTextState.currentSpanStyle.fontSize == headlineMedium.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { richTextState.toggleSpanStyle(spanStyle = headlineMedium.toSpanStyle()) }) { Text("H1", style = headlineSmall) }
-                            Button(contentPadding = PaddingValues(4.dp), shape = MaterialTheme.shapes.medium, colors = if (richTextState.currentSpanStyle.fontSize == headlineSmall.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(), onClick = { richTextState.toggleSpanStyle(spanStyle = headlineSmall.toSpanStyle()) }) { Text("H2", style = headlineSmall) }
-                        }
-                    } }
+            itemsIndexed(steps) { index, state ->
+                StepTextField(
+                    richTextState = state.second, headline = state.first to { steps[index] = state.copy(first = it) }, onRemove = { steps.removeAt(index) },
+                    isFocused = focusIndex == index, changeFocus = {
+                        if (it) { focusIndex = index }
+                    }
                 )
             }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            steps.add("" to empty.copy())
+                            println(steps)
+                        }
+                    ) {
+                        Text("Добавить шаг")
+                    }
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = {}
+                    ) {
+                        Text("Добавить фото")
+                    }
+
+                }
+            }
+
         }
         AnimatedContent(listState.lastScrolledBackward || !listState.canScrollBackward, modifier =
         Modifier.fillMaxWidth().padding(horizontal = 32.dp)
@@ -129,9 +149,10 @@ fun CreateRecipeScreen(
             if (it) {
                 Button(
                     modifier = Modifier.fillMaxWidth().height(ButtonDefaults.MinHeight * 1.25f),
-                    onClick = { viewModel.addRecipe(current.copy(
-                        text = richTextState.toMarkdown()
-                    ), onCreated) },
+                    onClick = {
+                        val merged = steps.map { step -> step.first + "<br>" + step.second.toMarkdown() }.reduce { a, b -> "$a\n$b" }
+                        viewModel.addRecipe(current.copy(text = merged), onCreated)
+                    },
                     shape = MaterialTheme.shapes.medium
                 ) {
                     Text("Сохранить")
