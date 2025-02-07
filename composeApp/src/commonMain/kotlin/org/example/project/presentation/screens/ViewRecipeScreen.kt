@@ -1,5 +1,7 @@
 package org.example.project.presentation.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -19,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
@@ -30,7 +34,7 @@ import org.example.project.viewModels.PersonalVM
 fun ViewRecipeScreen(recipeId: Long, onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: PersonalVM) {
     val recipe = viewModel.state.collectAsState().value.recipes.recipes.find { it.id == recipeId } ?: return
     val richTextState = rememberSaveable(recipe.text) { recipe.text.split('\n').map { md ->
-        RichTextState().apply { setMarkdown(md) }
+        md.substringBefore("<br>") to RichTextState().apply { setMarkdown(md.substringAfter("<br>")) }
     } }
     LazyColumn(modifier = modifier, contentPadding = PaddingValues(16.dp)) {
         item {
@@ -49,9 +53,12 @@ fun ViewRecipeScreen(recipeId: Long, onBack: () -> Unit, modifier: Modifier = Mo
                     }
                 })
         }
-        items(richTextState, key = { it.toText() }) {
+        items(richTextState, key = { it.first + it.second.toText() }) {
             Card(modifier = Modifier.fillParentMaxWidth()) {
-                RichText(it, fontSize = MaterialTheme.typography.headlineSmall.fontSize, modifier = Modifier.padding(8.dp))
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(it.first, fontSize = MaterialTheme.typography.headlineSmall.fontSize, fontWeight = FontWeight.ExtraBold)
+                    RichText(it.second, fontSize = MaterialTheme.typography.bodyLarge.fontSize)
+                }
             }
             Spacer(modifier = Modifier.padding(bottom = 16.dp))
         }

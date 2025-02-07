@@ -68,7 +68,7 @@ fun CreateRecipeScreen(
         )
     }
     val steps by remember { mutableStateOf(
-        SnapshotStateList<RichTextState>()
+        SnapshotStateList<Pair<String, RichTextState>>()
     ) }
     val empty = rememberRichTextState()
     var focusIndex by remember { mutableStateOf<Int?>(null) }
@@ -109,7 +109,7 @@ fun CreateRecipeScreen(
             }
             itemsIndexed(steps) { index, state ->
                 StepTextField(
-                    richTextState = state, onRemove = { steps.removeAt(index) },
+                    richTextState = state.second, headline = state.first to { steps[index] = state.copy(first = it) }, onRemove = { steps.removeAt(index) },
                     isFocused = focusIndex == index, changeFocus = {
                         if (it) { focusIndex = index }
                     }
@@ -123,7 +123,7 @@ fun CreateRecipeScreen(
                     Button(
                         modifier = Modifier.weight(1f),
                         onClick = {
-                            steps.add(empty.copy())
+                            steps.add("" to empty.copy())
                             println(steps)
                         }
                     ) {
@@ -150,7 +150,7 @@ fun CreateRecipeScreen(
                 Button(
                     modifier = Modifier.fillMaxWidth().height(ButtonDefaults.MinHeight * 1.25f),
                     onClick = {
-                        val merged = steps.map { step -> step.toMarkdown() }.reduce { a, b -> "$a\n$b" }
+                        val merged = steps.map { step -> step.first + "<br>" + step.second.toMarkdown() }.reduce { a, b -> "$a\n$b" }
                         viewModel.addRecipe(current.copy(text = merged), onCreated)
                     },
                     shape = MaterialTheme.shapes.medium

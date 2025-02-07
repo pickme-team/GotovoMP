@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -18,7 +20,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,13 +42,27 @@ import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 fun StepTextField(
     richTextState: RichTextState,
+    headline: Pair<String, (String) -> Unit>,
     onRemove: () -> Unit,
     isFocused: Boolean,
     changeFocus: (Boolean) -> Unit
 ) {
     Box(Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(headline.first, onValueChange = { headline.second(it) }, modifier = Modifier.height(
+                TextFieldDefaults.MinHeight
+            ).weight(1f), placeholder = { Text("Заголовок") }, shape = MaterialTheme.shapes.medium, colors = OutlinedTextFieldDefaults.colors(
+                errorBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent,
+                disabledBorderColor = Color.Transparent
+            ), singleLine = true)
+            IconButton(onClick = onRemove) {
+                Icon(Icons.Default.Close, contentDescription = "remove item")
+            }
+        }
         RichTextEditor(
-            modifier = Modifier.fillMaxSize().onFocusChanged {
+            modifier = Modifier.padding(top = TextFieldDefaults.MinHeight).fillMaxSize().onFocusChanged {
                 changeFocus(it.isFocused)
             },
             state = richTextState,
@@ -53,6 +73,7 @@ fun StepTextField(
             ),
             minLines = 5,
             shape = MaterialTheme.shapes.medium,
+            placeholder = { Text("Текст") },
             supportingText = {
                 AnimatedVisibility(isFocused) {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -106,8 +127,5 @@ fun StepTextField(
                     }
                 } }
         )
-        IconButton(onClick = onRemove, modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)) {
-            Icon(Icons.Default.Close, contentDescription = "remove item")
-        }
     }
 }
