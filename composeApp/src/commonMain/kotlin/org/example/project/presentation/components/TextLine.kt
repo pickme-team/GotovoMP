@@ -4,6 +4,7 @@ import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -14,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,7 +38,7 @@ fun TextLine(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     enabled: Boolean = true,
-    isError: Boolean = false,
+    isError: MutableState<Boolean> = mutableStateOf(true),
     errorText: String = "",
     supportingText: String = "",
     leadingIcon: (@Composable () -> Unit)? = null,
@@ -56,63 +58,69 @@ fun TextLine(
       animateFloatAsState(
           if (isFocused) 1f else 0f, animationSpec = tween(200, easing = EaseOutCubic))
   val animColor = primary.copy(animProgress).compositeOver(surfaceBright)
-  BasicTextField(
-      enabled = enabled,
-      singleLine = true,
-      keyboardOptions = keyboardOptions,
-      keyboardActions = keyboardActions,
-      visualTransformation = visualTransformation,
-      modifier =
-          modifier.height(48.dp).onFocusChanged {
-            isFocused = it.isFocused
-          },
-      textStyle =
-          MaterialTheme.typography.headlineSmall.copy(
-              color = MaterialTheme.colorScheme.onBackground),
-      value = value,
-      onValueChange = { it: TextFieldValue -> onValueChange(it) },
-      cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-      decorationBox = { innerTextField ->
-        Box(
+    Column {
+        BasicTextField(
+            enabled = enabled,
+            singleLine = true,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            visualTransformation = visualTransformation,
             modifier =
-                Modifier.drawWithContent {
-                  drawRect(
-                      Brush.linearGradient(
-                          0f to surfaceBright, 0.75f to surfaceBright, 1f to Color.Transparent),
-                      topLeft = Offset(0f, size.height - 6.dp.toPx()),
-                      size = Size(size.width, 2.dp.toPx()))
-                  drawRect(
-                      Brush.linearGradient(
-                          0f to animColor, animProgress to animColor, 1f to Color.Transparent),
-                      topLeft = Offset(0f, size.height - 6.dp.toPx()),
-                      size = Size(size.width, 3.dp.toPx()))
-                  drawContent()
-                }) {
-              Row {
-                  if (prefix != null) {
-                      Text(prefix,
-                          style =
-                          MaterialTheme.typography.headlineSmall.copy(
-                              MaterialTheme.colorScheme.onBackground
-                          ))
-                  }
-                  Box {
-                      innerTextField()
-                      if (value.text.isEmpty()) {
-                          Text(
-                              placeholderText,
-                              color = MaterialTheme.colorScheme.onBackground.copy(0.3f),
-                              style =
-                              MaterialTheme.typography.headlineSmall.copy(
-                                  MaterialTheme.colorScheme.onBackground
-                              )
-                          )
-                      }
-                  }
-                  if (trailingIcon != null) {
-                      trailingIcon()
-                  }
-              }
-            }
-      })
+            modifier.height(48.dp).onFocusChanged {
+                isFocused = it.isFocused
+            },
+            textStyle =
+            MaterialTheme.typography.headlineSmall.copy(
+                color = MaterialTheme.colorScheme.onBackground),
+            value = value,
+            onValueChange = { it: TextFieldValue -> onValueChange(it) },
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            decorationBox = { innerTextField ->
+                Box(
+                    modifier =
+                    Modifier.drawWithContent {
+                        drawRect(
+                            Brush.linearGradient(
+                                0f to surfaceBright, 0.75f to surfaceBright, 1f to Color.Transparent),
+                            topLeft = Offset(0f, size.height - 6.dp.toPx()),
+                            size = Size(size.width, 2.dp.toPx()))
+                        drawRect(
+                            Brush.linearGradient(
+                                0f to animColor, animProgress to animColor, 1f to Color.Transparent),
+                            topLeft = Offset(0f, size.height - 6.dp.toPx()),
+                            size = Size(size.width, 3.dp.toPx()))
+                        drawContent()
+                    }) {
+                    Row {
+                        if (prefix != null) {
+                            Text(prefix,
+                                style =
+                                MaterialTheme.typography.headlineSmall.copy(
+                                    MaterialTheme.colorScheme.onBackground
+                                ))
+                        }
+                        Box {
+                            innerTextField()
+                            if (value.text.isEmpty()) {
+                                Text(
+                                    placeholderText,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(0.3f),
+                                    style =
+                                    MaterialTheme.typography.headlineSmall.copy(
+                                        MaterialTheme.colorScheme.onBackground
+                                    )
+                                )
+                            }
+                        }
+                        if (trailingIcon != null) {
+                            trailingIcon()
+                        }
+                    }
+                }
+            })
+        if (isError.value) {
+            Text(errorText)
+        }
+    }
+
 }
