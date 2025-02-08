@@ -2,6 +2,7 @@ package org.example.project.data.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -32,7 +33,7 @@ class ApiClient(
            url("auth/signIn")
            setBody(body)
        }.body()
-    }
+    } // TODO("нахуя нам два логина?")
 
     suspend fun singIn(body: SignInWithPhoneNumberRequest): DomainResult<SignInDTO> = wrap {
         httpClient.post {
@@ -49,14 +50,20 @@ class ApiClient(
 
     suspend fun getRecipes(): DomainResult<List<RecipeDTO>> = wrap {
         httpClient.get {
-            url("recipe/get")
+            url("recipes")
         }.body()
     }
 
     suspend fun addRecipe(body: RecipeCreateRequest): DomainResult<HttpResponse> = wrap {
         httpClient.post {
             setBody(body)
-            url("recipe/add")
+            url("recipes")
         }.body()
+    }
+
+    suspend fun deleteRecipe(id: Long): DomainResult<HttpResponse> = wrap {
+        httpClient.delete {
+            url("/recipes/$id")
+        }
     }
 }

@@ -2,14 +2,12 @@ package org.example.project.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.example.project.data.local.settings.SettingsManager
 import org.example.project.data.network.ApiClient
 import org.example.project.data.network.Net
@@ -50,6 +48,13 @@ class PersonalVM(private val api: ApiClient = ApiClient(Net.client)): ViewModel(
         }
     }
 
+    fun deleteRecipe(recipeId: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            api.deleteRecipe(recipeId)
+            loadRecipes()
+        }
+    }
+
     private suspend fun loadRecipes(callback: suspend () -> Unit = {}) {
         SettingsManager.token.nullIfBlank()?.let {
             _state.update { it.copy(isLoading = true) }
@@ -61,7 +66,7 @@ class PersonalVM(private val api: ApiClient = ApiClient(Net.client)): ViewModel(
             _state.update { it.copy(isLoading = false) }
             callback()
         }
-    }
+    } //TODO("А поч это не в корутине? А то оно в логах пишет, что фреймы пропускаются")
 
     private suspend fun createRecipe(recipe: RecipeCreateRequest) {
         SettingsManager.token.nullIfBlank()?.let {

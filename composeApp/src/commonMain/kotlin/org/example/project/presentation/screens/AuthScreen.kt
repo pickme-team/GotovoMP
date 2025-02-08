@@ -182,7 +182,11 @@ private fun Register(
     val kbdActions = KeyboardActions {
         if (!lastFocused) fm.moveFocus(FocusDirection.Down) else action()
     }
-    LaunchedEffect(Triple(firstName, lastName, username), Pair(phoneNumber, password)) {
+
+    var isPhoneNumberCorrect = remember (phoneNumber) {phoneNumber.text.length == 11 && phoneNumber.text.all { it.isDigit() }}
+    val isLastNameCorrect = remember (lastName) {lastName.text.length in 3..25 && lastName.text.all { it.isLetter() }}
+    val isUsernameCorrect = remember (username) {username.text.length in 5..30 && username.text.all { it.isLetter() && it in "_" }}
+     LaunchedEffect(Triple(firstName, lastName, username), Pair(phoneNumber, password)) {
         authVM.resetError()
     }
     AuthColumn(
@@ -191,12 +195,16 @@ private fun Register(
         right = "Продолжить" to action,
         error = error
     ) {
+        val isFirstNameCorrect = remember (firstName) {firstName.text.length in 3..25 && firstName.text.all { it.isLetter()}}
+        var firstNameTyped by remember { mutableStateOf(false) }
         TextLine(
             firstName,
             keyboardActions = kbdActions,
-            onValueChange = { firstName = it },
+            onValueChange = { firstName = it
+                            firstNameTyped = true},
             placeholderText = "Имя",
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = isFirstNameCorrect && firstNameTyped
         )
         TextLine(
             lastName,
@@ -223,7 +231,8 @@ private fun Register(
             keyboardActions = kbdActions,
             prefix = "$prefix ",
             placeholderText = mask,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+
         )
         TextLine(
             password,
