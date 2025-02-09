@@ -22,10 +22,21 @@ data class Ingredient(
     val additionalParameters: String,
 )
 
+fun Ingredient.toRequest() = IngredientCreateRequest(name, quantityType, quantity, category, additionalParameters)
+
 @Serializable
 data class RecipeCreateRequest(
     val name: String,
     val text: String,
     val tags: List<String>,
-    val ingredients: List<Ingredient>,
+    val ingredients: List<IngredientCreateRequest>,
+)
+
+@Serializable
+data class IngredientCreateRequest(
+    val name: String,
+    val quantityType: Long,
+    val quantity: Long,
+    val category: String,
+    val additionalParameters: String,
 )

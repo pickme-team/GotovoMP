@@ -5,14 +5,18 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,10 +39,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Badge
+import androidx.compose.material.Chip
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -47,6 +56,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -67,16 +77,23 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.sp
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import org.example.project.data.network.model.Ingredient
+import org.example.project.data.network.model.IngredientCreateRequest
 import org.example.project.data.network.model.RecipeCreateRequest
 import org.example.project.presentation.components.StepTextField
 import org.example.project.viewModels.PersonalVM
+import kotlin.math.max
+import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -92,6 +109,7 @@ fun CreateRecipeScreen(
             )
         )
     }
+    val ingredientState by viewModel.ingredientState.collectAsState()
     val steps by remember {
         mutableStateOf(
             SnapshotStateList<Pair<String, RichTextState>>()
@@ -133,10 +151,9 @@ fun CreateRecipeScreen(
             }
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
-                        .clickable {
-                            ingredientsOpen = true
-                        }.padding(vertical = 4.dp).padding(start = 16.dp),
+                    modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).clickable {
+                        ingredientsOpen = true
+                    }.padding(vertical = 4.dp).padding(start = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -146,7 +163,7 @@ fun CreateRecipeScreen(
                     )
                     Badge(backgroundColor = MaterialTheme.colorScheme.primary) {
                         Text(
-                            current.ingredients.size.toString(),
+                            ingredientState.current.size.toString(),
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
@@ -207,7 +224,8 @@ fun CreateRecipeScreen(
                         val merged =
                             steps.mapIndexed { index, step -> step.first.ifBlank { "Шаг ${index + 1}" } + "<br>" + step.second.toMarkdown() }
                                 .reduceOrNull { a, b -> "$a\n$b" }
-                        viewModel.addRecipe(current.copy(text = merged ?: ""), onCreated)
+                        viewModel.addRecipe(current.copy(text = merged ?: "", ingredients = ingredientState.current), onCreated)
+                        viewModel.cleanIngredients()
                     },
                     shape = MaterialTheme.shapes.medium
                 ) {
@@ -215,26 +233,54 @@ fun CreateRecipeScreen(
                 }
             }
         }
-        AnimatedVisibility(ingredientsOpen, enter = slideInHorizontally(initialOffsetX = { it }), exit = slideOutHorizontally(targetOffsetX = { it })) {
-            IngredientScreen(
-                viewModel = viewModel,
-                onBack = { ingredientsOpen = false })
+        AnimatedVisibility(ingredientsOpen,
+            enter = slideInHorizontally(initialOffsetX = { it }),
+            exit = slideOutHorizontally(targetOffsetX = { it })
+        ) {
+            IngredientScreen(viewModel = viewModel, onBack = { ingredientsOpen = false })
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifier = Modifier) {
     val uiState by viewModel.ingredientState.collectAsState()
-    LazyColumn(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    var showAddUi by remember { mutableStateOf(false) }
+    LazyColumn(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
-            SearchBar(query = uiState.query to viewModel::updateIngredientQuery, onBack = onBack)
+            SearchBar(
+                query = uiState.query to viewModel::updateIngredientQuery,
+                showAddUi = showAddUi,
+                onShowAddUi = { showAddUi = !showAddUi },
+                onBack = onBack
+            )
         }
         item {
-            FlowRow {
-                uiState.current.forEach {
-                    Card(onClick = {}) { Text(it.name, modifier = Modifier.padding(8.dp)) }
+            CreateIngredientCard(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                show = showAddUi,
+                onCreated = {
+                    viewModel.addIngredient(it)
+                })
+        }
+        item {
+            FlowRow(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                uiState.current.forEachIndexed { index, it ->
+                    Chip(onClick = { viewModel.removeIngredientAt(index) }) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                it.name, modifier = Modifier.padding(8.dp)
+                            )
+                            Text(
+                                it.quantity.toString(), modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -247,27 +293,33 @@ fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifi
 }
 
 @Composable
-private fun SearchBar(query: Pair<String, (String) -> Unit>, onBack: () -> Unit) {
+private fun SearchBar(
+    query: Pair<String, (String) -> Unit>,
+    showAddUi: Boolean,
+    onShowAddUi: () -> Unit,
+    onBack: () -> Unit,
+) {
     val fr = remember { FocusRequester() }
     val fm = LocalFocusManager.current
     LaunchedEffect(Unit) {
-       fr.requestFocus()
+        fr.requestFocus()
     }
     var isFocused by remember { mutableStateOf(false) }
     val shape by animateDpAsState(if (isFocused) 0.dp else 16.dp)
-    TextField(
-        query.first,
+    TextField(query.first,
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
             errorIndicatorColor = Color.Transparent
         ),
-        leadingIcon = { IconButton(onClick = {
-            fm.clearFocus()
-            query.second("")
-            onBack()
-        }) { Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "назад") } },
+        leadingIcon = {
+            IconButton(onClick = {
+                fm.clearFocus()
+                query.second("")
+                onBack()
+            }) { Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "назад") }
+        },
         onValueChange = { query.second(it) },
         shape = RoundedCornerShape(shape),
         placeholder = { Text("Поиск", style = MaterialTheme.typography.headlineSmall) },
@@ -275,8 +327,109 @@ private fun SearchBar(query: Pair<String, (String) -> Unit>, onBack: () -> Unit)
         keyboardActions = KeyboardActions(onSearch = {
             fm.clearFocus()
         }),
+        trailingIcon = {
+            IconButton(onClick = onShowAddUi) {
+                if (showAddUi) {
+                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "скрыть")
+                } else {
+                    Icon(Icons.Default.AddCircle, contentDescription = "добавить")
+                }
+            }
+        },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         textStyle = MaterialTheme.typography.headlineSmall,
-        modifier = Modifier.fillMaxWidth().onFocusChanged { isFocused = it.isFocused }.focusRequester(fr).padding(horizontal = shape, vertical = shape.div(2))
-    )
+        modifier = Modifier.fillMaxWidth().onFocusChanged { isFocused = it.isFocused }
+            .focusRequester(fr).padding(horizontal = shape).padding(top = shape.div(2)))
+}
+
+@Composable
+private fun CreateIngredientCard(
+    show: Boolean,
+    onCreated: (IngredientCreateRequest) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedVisibility(
+        show, modifier = modifier, enter = expandVertically(), exit = shrinkVertically()
+    ) {
+        var name by remember { mutableStateOf("") }
+        var quantity by remember { mutableStateOf(1L) }
+        var category by remember { mutableStateOf("") }
+        var extra by remember { mutableStateOf("") }
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("Добавить ингридиент", style = MaterialTheme.typography.headlineSmall)
+                OutlinedTextField(
+                    name,
+                    textStyle = MaterialTheme.typography.bodyLarge,
+                    onValueChange = { name = it },
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Название") },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    category,
+                    textStyle = MaterialTheme.typography.bodyLarge,
+                    onValueChange = { category = it },
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Категория") },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    extra,
+                    textStyle = MaterialTheme.typography.bodyLarge,
+                    onValueChange = { extra = it },
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Дополнительно") },
+                    singleLine = true
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(quantity.toString(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        onValueChange = { quantity = it.toLongOrNull() ?: 0L },
+                        shape = MaterialTheme.shapes.medium,
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                        modifier = Modifier.weight(1f, false),
+                        leadingIcon = {
+                            IconButton(onClick = {
+                                quantity = max(quantity - 1, 1)
+                            }) {
+                                Icon(
+                                    Icons.Default.KeyboardArrowDown, contentDescription = "убрать"
+                                )
+                            }
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { quantity++ }) {
+                                Icon(
+                                    Icons.Default.KeyboardArrowUp, contentDescription = "добавить"
+                                )
+                            }
+                        })
+                    Button(
+                        onClick = {
+                            onCreated(
+                                IngredientCreateRequest(
+                                    name = name,
+                                    quantityType = 0,
+                                    quantity = quantity,
+                                    category = category,
+                                    additionalParameters = extra
+                                )
+                            )
+                        },
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.height(OutlinedTextFieldDefaults.MinHeight)
+                    ) { Text("Сохранить") }
+                }
+            }
+        }
+    }
 }
