@@ -1,14 +1,20 @@
 package org.example.project.presentation.screens
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,6 +32,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Badge
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
@@ -44,6 +53,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,8 +63,13 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
@@ -86,7 +102,7 @@ fun CreateRecipeScreen(
     val listState = rememberLazyListState()
     var ingredientsOpen by remember { mutableStateOf(false) }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize().consumeWindowInsets(WindowInsets.systemBars)) {
         LazyColumn(state = listState, contentPadding = PaddingValues(16.dp)) {
             item {
                 CenterAlignedTopAppBar(title = {
@@ -199,19 +215,30 @@ fun CreateRecipeScreen(
                 }
             }
         }
-        if (ingredientsOpen) IngredientScreen(
-            current.ingredients,
-            onBack = { ingredientsOpen = false })
+        AnimatedVisibility(ingredientsOpen, enter = slideInHorizontally(initialOffsetX = { it }), exit = slideOutHorizontally(targetOffsetX = { it })) {
+            IngredientScreen(
+                viewModel = viewModel,
+                onBack = { ingredientsOpen = false })
+        }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun IngredientScreen(current: List<Ingredient>, onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifier = Modifier) {
+    val uiState by viewModel.ingredientState.collectAsState()
     LazyColumn(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         item {
-            SearchBar(onBack = onBack)
+            SearchBar(query = uiState.query to viewModel::updateIngredientQuery, onBack = onBack)
         }
-        items(current, key = { it }) {
+        item {
+            FlowRow {
+                uiState.current.forEach {
+                    Card(onClick = {}) { Text(it.name, modifier = Modifier.padding(8.dp)) }
+                }
+            }
+        }
+        items(uiState.found, key = { it }) {
             Card(onClick = {}) {
                 Text(it.name)
             }
@@ -220,21 +247,36 @@ fun IngredientScreen(current: List<Ingredient>, onBack: () -> Unit, modifier: Mo
 }
 
 @Composable
-private fun SearchBar(onBack: () -> Unit) {
-    var query by remember { mutableStateOf("") }
+private fun SearchBar(query: Pair<String, (String) -> Unit>, onBack: () -> Unit) {
+    val fr = remember { FocusRequester() }
+    val fm = LocalFocusManager.current
+    LaunchedEffect(Unit) {
+       fr.requestFocus()
+    }
     var isFocused by remember { mutableStateOf(false) }
     val shape by animateDpAsState(if (isFocused) 0.dp else 16.dp)
     TextField(
-        query,
+        query.first,
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
             errorIndicatorColor = Color.Transparent
         ),
-        leadingIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "назад") } },
-        onValueChange = { query = it },
+        leadingIcon = { IconButton(onClick = {
+            fm.clearFocus()
+            query.second("")
+            onBack()
+        }) { Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "назад") } },
+        onValueChange = { query.second(it) },
         shape = RoundedCornerShape(shape),
-        modifier = Modifier.fillMaxWidth().onFocusChanged { isFocused = it.isFocused }.padding(horizontal = shape, vertical = shape.div(2))
+        placeholder = { Text("Поиск", style = MaterialTheme.typography.headlineSmall) },
+        singleLine = true,
+        keyboardActions = KeyboardActions(onSearch = {
+            fm.clearFocus()
+        }),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        textStyle = MaterialTheme.typography.headlineSmall,
+        modifier = Modifier.fillMaxWidth().onFocusChanged { isFocused = it.isFocused }.focusRequester(fr).padding(horizontal = shape, vertical = shape.div(2))
     )
 }

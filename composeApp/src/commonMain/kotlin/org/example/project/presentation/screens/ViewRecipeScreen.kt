@@ -4,9 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ListItem
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -29,14 +34,14 @@ import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
 import org.example.project.viewModels.PersonalVM
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun ViewRecipeScreen(recipeId: Long, onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: PersonalVM) {
     val recipe = viewModel.state.collectAsState().value.recipes.recipes.find { it.id == recipeId } ?: return
     val richTextState = rememberSaveable(recipe.text) { recipe.text.split('\n').map { md ->
         md.substringBefore("<br>") to RichTextState().apply { setMarkdown(md.substringAfter("<br>")) }
     } }
-    LazyColumn(modifier = modifier, contentPadding = PaddingValues(16.dp)) {
+    LazyColumn(modifier = modifier.consumeWindowInsets(WindowInsets.systemBars), contentPadding = PaddingValues(16.dp)) {
         item {
             CenterAlignedTopAppBar(title = {
                 Text(
@@ -52,6 +57,17 @@ fun ViewRecipeScreen(recipeId: Long, onBack: () -> Unit, modifier: Modifier = Mo
                         )
                     }
                 })
+        }
+        item {
+            Column {
+                recipe.ingredients.forEach {
+                    ListItem(trailing = {
+                        Text("${it.quantity}")
+                    }) {
+                        Text(it.name, style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            }
         }
         items(richTextState, key = { it.first + it.second.toText() }) {
             Card(modifier = Modifier.fillParentMaxWidth()) {
