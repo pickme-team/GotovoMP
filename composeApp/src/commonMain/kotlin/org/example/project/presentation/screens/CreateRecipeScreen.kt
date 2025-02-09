@@ -190,8 +190,8 @@ fun CreateRecipeScreen(
                     onClick = {
                         val merged =
                             steps.mapIndexed { index, step -> step.first.ifBlank { "Шаг ${index + 1}" } + "<br>" + step.second.toMarkdown() }
-                                .reduce { a, b -> "$a\n$b" }
-                        viewModel.addRecipe(current.copy(text = merged), onCreated)
+                                .reduceOrNull { a, b -> "$a\n$b" }
+                        viewModel.addRecipe(current.copy(text = merged ?: ""), onCreated)
                     },
                     shape = MaterialTheme.shapes.medium
                 ) {
