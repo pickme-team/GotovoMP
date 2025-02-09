@@ -38,6 +38,7 @@ fun TextLine(
     enabled: Boolean = true,
     isError: Boolean = false,
     errorText: String = "",
+    supportingText: String = "",
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     placeholder: (@Composable () -> Unit)? = null,

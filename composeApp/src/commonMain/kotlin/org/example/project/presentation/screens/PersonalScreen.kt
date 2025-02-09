@@ -85,14 +85,14 @@ fun PersonalScreen(navCtrl: NavHostController, modifier: Modifier = Modifier, vi
                     )) {
                         Icon(Icons.Default.Add, contentDescription = "Add")
                     }
-                })
+                }, delete = { viewModel.deleteRecipe(it) } )
             }
         }
     }
 }
 
 @Composable
-private fun Section(title: String, items: List<RecipeDTO>, onClick: (Long) -> Unit, modifier: Modifier = Modifier, icon: ImageVector? = null, actionButton: (@Composable () -> Unit)? = null) {
+private fun Section(title: String, items: List<RecipeDTO>, onClick: (Long) -> Unit, modifier: Modifier = Modifier, icon: ImageVector? = null, actionButton: (@Composable () -> Unit)? = null, delete: (Long) -> Unit) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -109,7 +109,7 @@ private fun Section(title: String, items: List<RecipeDTO>, onClick: (Long) -> Un
         val rowScrollState = rememberLazyListState()
         LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp), state = rowScrollState, contentPadding = PaddingValues(horizontal = 24.dp)) {
             items(items, key = { it.id }) {
-                Recipe(title = it.name, imageUrl = images.random(), onClick = { onClick(it.id) })
+                Recipe(title = it.name, imageUrl = images.random(), onClick = { onClick(it.id) }, delete = { delete(it.id) })
             }
         }
     }
@@ -117,7 +117,7 @@ private fun Section(title: String, items: List<RecipeDTO>, onClick: (Long) -> Un
 
 @Composable
 private fun Recipe(
-    title: String, imageUrl: String, modifier: Modifier = Modifier, onClick: () -> Unit
+    title: String, imageUrl: String, modifier: Modifier = Modifier, onClick: () -> Unit, delete: () -> Unit
 ) {
     var isPopupOpen by rememberSaveable { mutableStateOf(false) }
     val cardWidth = 192.dp
@@ -125,7 +125,7 @@ private fun Recipe(
         modifier = modifier.width(cardWidth).aspectRatio(0.8f)
     ) {
         RecipeCard(title, imageUrl, onClick = onClick, onHold = { isPopupOpen = true })
-        RecipeDropdown(isPopupOpen = isPopupOpen, onDismissRequest = { isPopupOpen = false }, modifier = Modifier.width(cardWidth))
+        RecipeDropdown(isPopupOpen = isPopupOpen, onDismissRequest = { isPopupOpen = false }, modifier = Modifier.width(cardWidth), delete = { delete() })
     }
 }
 
@@ -168,7 +168,7 @@ fun RecipeCard(title: String, imageUrl: String, onClick: () -> Unit, onHold: () 
 }
 
 @Composable
-private fun RecipeDropdown(isPopupOpen: Boolean, onDismissRequest: () -> Unit, modifier: Modifier = Modifier) = DropdownMenu(
+private fun RecipeDropdown(isPopupOpen: Boolean, onDismissRequest: () -> Unit, modifier: Modifier = Modifier, delete: () -> Unit) = DropdownMenu(
     modifier = modifier,
     onDismissRequest = onDismissRequest,
     expanded = isPopupOpen,
@@ -176,7 +176,7 @@ private fun RecipeDropdown(isPopupOpen: Boolean, onDismissRequest: () -> Unit, m
     offset = DpOffset(0.dp, 16.dp)
 ) {
     RecipeDropdownItem(text = "Поделиться", icon = Icons.Default.Share) { onDismissRequest() }
-    RecipeDropdownItem(text = "Удалить", icon = Icons.Default.Delete) { onDismissRequest() }
+    RecipeDropdownItem(text = "Удалить", icon = Icons.Default.Delete) { delete() }
 }
 
 @Composable
