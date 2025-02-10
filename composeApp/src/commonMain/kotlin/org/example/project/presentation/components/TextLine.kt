@@ -1,5 +1,6 @@
 package org.example.project.presentation.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -54,10 +55,12 @@ fun TextLine(
   var isFocused by remember { mutableStateOf(false) }
   val surfaceBright = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f)
   val primary = MaterialTheme.colorScheme.primary
+  val error = MaterialTheme.colorScheme.error
+  val lineColor = if (isError) error else primary
   val animProgress by
       animateFloatAsState(
-          if (isFocused) 1f else 0f, animationSpec = tween(200, easing = EaseOutCubic))
-  val animColor = primary.copy(animProgress).compositeOver(surfaceBright)
+          if (isFocused || isError) 1f else 0f, animationSpec = tween(200, easing = EaseOutCubic))
+  val animColor = lineColor.copy(animProgress).compositeOver(surfaceBright)
     Column {
         BasicTextField(
             enabled = enabled,
@@ -118,9 +121,8 @@ fun TextLine(
                     }
                 }
             })
-        if (isError) {
-            Text(errorText)
+        AnimatedVisibility(isError) {
+            Text(errorText, color = MaterialTheme.colorScheme.error)
         }
     }
-
 }

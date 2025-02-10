@@ -134,7 +134,7 @@ private fun LoginWithPhone(
     val phoneValidation by derivedStateOf {
         when {
             phoneNumber.text.isEmpty() -> ValidationState.Unset
-            phoneNumber.text.run { length < maxLen - 1 && all { it.isDigit() } } -> ValidationState.Invalid
+            phoneNumber.text.run { length < maxLen && all { it.isDigit() } } -> ValidationState.Invalid
             else -> ValidationState.Valid
         }
     }
