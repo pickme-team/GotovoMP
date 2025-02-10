@@ -2,7 +2,6 @@ package org.example.project.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,15 +11,15 @@ import kotlinx.coroutines.launch
 import org.example.project.data.local.settings.SettingsManager
 import org.example.project.data.network.ApiClient
 import org.example.project.data.network.Net
-import org.example.project.data.network.model.Ingredient
 import org.example.project.data.network.model.IngredientCreateRequest
 import org.example.project.data.network.model.RecipeCreateRequest
 import org.example.project.data.network.model.RecipeDTO
 import org.example.project.domain.DomainError
+import org.example.project.domain.GlobalEvent
+import org.example.project.domain.UI
 import org.example.project.domain.otherwise
 import org.example.project.domain.unwrap
 import org.example.project.nullIfBlank
-import kotlin.coroutines.CoroutineContext
 
 data class CreatedByMeState(
     val recipes: List<RecipeDTO> = emptyList(),
@@ -46,7 +45,22 @@ class PersonalVM(private val api: ApiClient = ApiClient(Net.client)): ViewModel(
     val ingredientState = _ingredientState.asStateFlow()
 
     init {
+        subscribeToGlobalEvents()
         fetchRecipes()
+    }
+
+    private fun subscribeToGlobalEvents() {
+        viewModelScope.launch {
+            UI.GlobalEventFlow.collect {
+                when (it) {
+                    GlobalEvent.Logout -> {
+                        _state.update { PersonalState() }
+                        _ingredientState.update { IngredientState() }
+                    }
+                    else -> Unit
+                }
+            }
+        }
     }
 
     fun fetchRecipes() {
@@ -71,7 +85,7 @@ class PersonalVM(private val api: ApiClient = ApiClient(Net.client)): ViewModel(
     private suspend fun loadRecipes(callback: suspend () -> Unit = {}) {
         SettingsManager.token.nullIfBlank()?.let {
             _state.update { it.copy(isLoading = true) }
-            api.getRecipes() unwrap { res ->
+            api.getOwnedRecipes() unwrap { res ->
                 _state.update { it.copy(recipes = it.recipes.copy(recipes = res)) }
             } otherwise { err ->
                 _state.update { it.copy(recipes = it.recipes.copy(error = err)) }
