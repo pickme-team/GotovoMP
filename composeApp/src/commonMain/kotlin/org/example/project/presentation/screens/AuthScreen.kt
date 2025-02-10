@@ -127,9 +127,6 @@ private fun LoginWithPhone(
     val action = { authVM.tryLogin(prefix + phoneNumber.text, password.text) }
     val fm = LocalFocusManager.current
     var lastFocused by remember { mutableStateOf(false) }
-    val kbdActions = KeyboardActions {
-        if (!lastFocused) fm.moveFocus(FocusDirection.Down) else action()
-    }
 
     val phoneValidation by derivedStateOf {
         when {
@@ -147,6 +144,10 @@ private fun LoginWithPhone(
 
     val authAvailable by derivedStateOf {
         listOf(phoneValidation, passwordValidation).fastAll { it.isValid() }
+    }
+
+    val kbdActions = KeyboardActions {
+        if (!lastFocused) fm.moveFocus(FocusDirection.Down) else { if (authAvailable) action() }
     }
 
     LaunchedEffect(Pair(phoneNumber, password)) {
@@ -201,9 +202,6 @@ private fun Register(
     val action = { authVM.tryRegister(firstName.text, lastName.text, username.text, phoneNumber.text, password.text) }
     var lastFocused by remember { mutableStateOf(false) }
     val fm = LocalFocusManager.current
-    val kbdActions = KeyboardActions {
-        if (!lastFocused) fm.moveFocus(FocusDirection.Down) else action()
-    }
 
     val firstNameValid by derivedStateOf { firstName.text.validation { it.length in 3..25 && it.all(Char::isLetter) } }
     val lastNameValid by derivedStateOf { lastName.text.validation { it.length in 3..25 && it.all(Char::isLetter) } }
@@ -213,6 +211,10 @@ private fun Register(
 
     val authAvailable by derivedStateOf {
         listOf(firstNameValid, lastNameValid, userNameValid, phoneValid, passwordValid).fastAll { it.isValid() }
+    }
+
+    val kbdActions = KeyboardActions {
+        if (!lastFocused) fm.moveFocus(FocusDirection.Down) else { if (authAvailable) action() }
     }
 
     LaunchedEffect(Triple(firstName, lastName, username), Pair(phoneNumber, password)) {
