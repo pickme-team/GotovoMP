@@ -38,7 +38,7 @@ fun TextLine(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     enabled: Boolean = true,
-    isError: MutableState<Boolean> = mutableStateOf(true),
+    isError: Boolean = false,
     errorText: String = "",
     supportingText: String = "",
     leadingIcon: (@Composable () -> Unit)? = null,
@@ -118,7 +118,7 @@ fun TextLine(
                     }
                 }
             })
-        if (isError.value) {
+        if (isError) {
             Text(errorText)
         }
     }
