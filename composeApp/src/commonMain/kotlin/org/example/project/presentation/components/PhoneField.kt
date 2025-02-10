@@ -96,7 +96,7 @@ fun PhoneField(
         },
         placeholderText = "000 000 00 00",
         prefix = "+7  ",
-        isError = hasError,
+        // isError = hasError,
         errorText = "Enter a valid phone number"
     )
 }

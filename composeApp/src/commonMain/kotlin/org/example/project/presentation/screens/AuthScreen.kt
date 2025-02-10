@@ -2,16 +2,12 @@ package org.example.project.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,24 +32,19 @@ import org.example.project.domain.DomainError
 import org.example.project.presentation.components.PhoneVisualTransformation
 import org.example.project.presentation.components.TextLine
 import org.example.project.viewModels.AuthVM
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.util.fastAll
+import org.example.project.presentation.util.ValidationState
+import org.example.project.presentation.util.validation
+import org.example.project.presentation.util.isError
+import org.example.project.presentation.util.isValid
 
 
 @Composable
@@ -81,6 +72,7 @@ private fun AuthColumn(
     left: Pair<String, () -> Unit>,
     right: Pair<String, () -> Unit>,
     error: DomainError?,
+    authAvailable: Boolean,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -91,7 +83,7 @@ private fun AuthColumn(
     ) {
         Column(modifier = Modifier.padding(bottom = 8.dp)) {
             Text(topText, style = MaterialTheme.typography.headlineSmall)
-            Text("GovnoMP", style = MaterialTheme.typography.displayMedium)
+            Text("GotovoMP", style = MaterialTheme.typography.displayMedium)
         }
         content()
         error?.let {
@@ -111,7 +103,8 @@ private fun AuthColumn(
                 modifier = Modifier.weight(1f),
                 onClick = right.second,
                 colors = ButtonDefaults.buttonColors()
-                    .copy(containerColor = MaterialTheme.colorScheme.primary)
+                    .copy(containerColor = MaterialTheme.colorScheme.primary),
+                enabled = authAvailable
             ) {
                 Text(right.first) // TODO res
             }
@@ -137,20 +130,49 @@ private fun LoginWithPhone(
     val kbdActions = KeyboardActions {
         if (!lastFocused) fm.moveFocus(FocusDirection.Down) else action()
     }
+
+    val phoneValidation by derivedStateOf {
+        when {
+            phoneNumber.text.isEmpty() -> ValidationState.Unset
+            phoneNumber.text.run { length < maxLen && all { it.isDigit() } } -> ValidationState.Invalid
+            else -> ValidationState.Valid
+        }
+    }
+    val passwordValidation by derivedStateOf {
+        when {
+            password.text.isEmpty() -> ValidationState.Unset
+            else -> ValidationState.Valid
+        }
+    }
+
+    val authAvailable by derivedStateOf {
+        listOf(phoneValidation, passwordValidation).fastAll { it.isValid() }
+    }
+
+    LaunchedEffect(Pair(phoneNumber, password)) {
+        authVM.resetError()
+    }
+
     AuthColumn(
         topText = "Вход в",
         left = "Регистрация" to toRegister,
         right = "Продолжить" to action,
         error = error,
+        authAvailable = authAvailable
     ) {
+        var phoneFocused by remember { mutableStateOf(false) }
         TextLine(
             phoneNumber,
             keyboardActions = kbdActions,
-            onValueChange = { if (it.text.length <= maxLen) phoneNumber = it },
+            onValueChange = {
+                if (it.text.length <= maxLen && it.text.all { it.isDigit() }) phoneNumber = it
+            },
             visualTransformation = PhoneVisualTransformation(mask, maskNum),
             prefix = "$prefix ",
             placeholderText = mask,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().onFocusChanged { phoneFocused = it.isFocused },
+            isError = phoneValidation.isError() && !phoneFocused,
+            errorText = "Неправильный номер телефона"
         )
         TextLine(
             password,
@@ -183,57 +205,73 @@ private fun Register(
         if (!lastFocused) fm.moveFocus(FocusDirection.Down) else action()
     }
 
-    var isPhoneNumberCorrect = remember (phoneNumber) {phoneNumber.text.length == 11 && phoneNumber.text.all { it.isDigit() }}
-    val isLastNameCorrect = remember (lastName) {lastName.text.length in 3..25 && lastName.text.all { it.isLetter() }}
-    val isUsernameCorrect = remember (username) {username.text.length in 5..30 && username.text.all { it.isLetter() && it in "_" }}
-     LaunchedEffect(Triple(firstName, lastName, username), Pair(phoneNumber, password)) {
+    val firstNameValid by derivedStateOf { firstName.text.validation { it.length in 3..25 && it.all(Char::isLetter) } }
+    val lastNameValid by derivedStateOf { lastName.text.validation { it.length in 3..25 && it.all(Char::isLetter) } }
+    val userNameValid by derivedStateOf { username.text.validation { it.length in 5..30 && it.all { it.isLetter() || it == '_' || it.isDigit() } }}
+    val phoneValid by derivedStateOf { phoneNumber.text.validation { it.length == 10 && it.all { it.isDigit() }}}
+    val passwordValid by derivedStateOf { password.text.validation { it.length in 8..30 } }
+
+    val authAvailable by derivedStateOf {
+        listOf(firstNameValid, lastNameValid, userNameValid, phoneValid, passwordValid).fastAll { it.isValid() }
+    }
+
+    LaunchedEffect(Triple(firstName, lastName, username), Pair(phoneNumber, password)) {
         authVM.resetError()
     }
     AuthColumn(
         topText = "Регистрация в",
         left = "Вход" to toLogin,
         right = "Продолжить" to action,
-        error = error
+        error = error,
+        authAvailable = authAvailable
     ) {
-        val isFirstNameCorrect = remember (firstName) {firstName.text.length in 3..25 && firstName.text.all { it.isLetter()}}
-        var firstNameTyped by remember { mutableStateOf(false) }
+        var firstNameFocused by remember { mutableStateOf(false) }
         TextLine(
             firstName,
             keyboardActions = kbdActions,
-            onValueChange = { firstName = it
-                            firstNameTyped = true},
+            onValueChange = { firstName = it },
             placeholderText = "Имя",
-            modifier = Modifier.fillMaxWidth(),
-            isError = isFirstNameCorrect && firstNameTyped
+            modifier = Modifier.fillMaxWidth().onFocusChanged { firstNameFocused = it.isFocused },
+            isError = firstNameValid.isError() && !firstNameFocused,
+            errorText = "Имя должно быть от 3 до 25 символов длинной и содержать только буквы"
         )
+        var lastNameFocused by remember { mutableStateOf(false) }
         TextLine(
             lastName,
             keyboardActions = kbdActions,
             onValueChange = { lastName = it },
             placeholderText = "Фамилия",
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().onFocusChanged { lastNameFocused = it.isFocused },
+            isError = lastNameValid.isError() && !lastNameFocused,
+            errorText = "Фамилия должна быть от 3 до 25 символов длинной и содержать только буквы"
         )
+        var userNameFocused by remember { mutableStateOf(false) }
         TextLine(
             username,
             keyboardActions = kbdActions,
             onValueChange = { username = it },
             placeholderText = "Логин",
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().onFocusChanged { userNameFocused = it.isFocused },
+            isError = userNameValid.isError() && !userNameFocused,
+            errorText = "Логин должен быть от 5 до 30 символов длинной и содержать только буквы, цифры и _"
         )
         val mask = "000 000 00 00"
         val maxLen = mask.count { it != ' ' }
         val maskNum = '0'
         val prefix = "+7"
+        var phoneFocused by remember { mutableStateOf(false) }
         TextLine(
             phoneNumber,
-            onValueChange = { if (it.text.length <= maxLen) phoneNumber = it },
+            onValueChange = { if (it.text.length <= maxLen && it.text.all { it.isDigit() }) phoneNumber = it },
             visualTransformation = PhoneVisualTransformation(mask, maskNum),
             keyboardActions = kbdActions,
             prefix = "$prefix ",
             placeholderText = mask,
-            modifier = Modifier.fillMaxWidth(),
-
+            modifier = Modifier.fillMaxWidth().onFocusChanged { phoneFocused = it.isFocused },
+            isError = phoneValid.isError() && !phoneFocused,
+            errorText = "Неправильный номер телефона"
         )
+        var passwordFocused by remember { mutableStateOf(false) }
         TextLine(
             password,
             onValueChange = { password = it },
@@ -242,7 +280,10 @@ private fun Register(
             placeholderText = "Пароль",
             modifier = Modifier.fillMaxWidth().onFocusChanged {
                 lastFocused = it.isFocused
-            }
+                passwordFocused = it.isFocused
+            },
+            isError = passwordValid.isError() && !passwordFocused,
+            errorText = "Пароль должен быть от 8 до 30 символов длинной"
         )
     }
 }
