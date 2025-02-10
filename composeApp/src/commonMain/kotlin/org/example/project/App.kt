@@ -92,13 +92,13 @@ fun App() {
                     navController = navCtrl,
                     startDestination = Nav.FEED.route
                 ) {
-                    composable(Nav.FEED.route) { FeedScreen() }
+                    composable(Nav.FEED.route) { FeedScreen(navCtrl) }
                     composable(Nav.MINE.route) { PersonalScreen(navCtrl, viewModel = personalVM) }
                     composable(Nav.PROFILE.route) { ProfileScreen() }
                     composable(Nav.VIEW.route + "/{id}") {
                         val recipeId = it.arguments?.getString("id")?.toLong()
                         if (recipeId != null) {
-                            ViewRecipeScreen(recipeId, onBack = { navCtrl.navigateUp() }, viewModel = personalVM)
+                            ViewRecipeScreen(recipeId, onBack = { navCtrl.navigateUp() })
                         }
                     }
                     composable(Nav.CREATE.route) { CreateRecipeScreen(onCreated = { navCtrl.navigateUp() }, viewModel = personalVM) }

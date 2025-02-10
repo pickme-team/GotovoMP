@@ -21,11 +21,12 @@ import org.example.project.nullIfBlank
 
 data class MainScreenVMState(
     val recipes: List<RecipeDTO> = emptyList(),
+    val isLoading: Boolean = false,
     val error: DomainError? = null,
 )
 
 class FeedScreenVM(
-    private val api: ApiClient = ApiClient(Net.client)
+    private val client: ApiClient = ApiClient(Net.client),
 ) : ViewModel() {
     private val _state = MutableStateFlow(MainScreenVMState())
     val state = _state.asStateFlow()
@@ -38,9 +39,20 @@ class FeedScreenVM(
         viewModelScope.launch {
             UI.GlobalEventFlow.collect {
                 when (it) {
+                    GlobalEvent.Login -> loadRecipes()
                     GlobalEvent.Logout -> _state.update { MainScreenVMState() }
-                    else -> Unit
                 }
+            }
+        }
+    }
+
+    fun loadRecipes() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.update { it.copy(isLoading = true) }
+            client.getRecipeFeed() unwrap { recipes ->
+                _state.update { it.copy(recipes = recipes, isLoading = false) }
+            } otherwise { err ->
+                _state.update { it.copy(error = err, isLoading = false) }
             }
         }
     }

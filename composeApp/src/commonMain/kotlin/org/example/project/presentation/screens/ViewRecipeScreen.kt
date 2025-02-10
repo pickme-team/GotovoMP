@@ -23,29 +23,36 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
 import org.example.project.viewModels.PersonalVM
+import org.example.project.viewModels.ViewRecipeVM
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun ViewRecipeScreen(recipeId: Long, onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: PersonalVM) {
-    val recipe = viewModel.state.collectAsState().value.recipes.recipes.find { it.id == recipeId } ?: return
-    val richTextState = rememberSaveable(recipe.text) { recipe.text.split('\n').map { md ->
+fun ViewRecipeScreen(recipeId: Long, onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: ViewRecipeVM = viewModel()) {
+    val uiState by viewModel.state.collectAsState()
+    LaunchedEffect(recipeId) {
+        viewModel.loadRecipe(recipeId)
+    }
+    val richTextState = rememberSaveable(uiState.recipe.text) { uiState.recipe.text.split('\n').map { md ->
         md.substringBefore("<br>") to RichTextState().apply { setMarkdown(md.substringAfter("<br>")) }
     } }
     LazyColumn(modifier = modifier.consumeWindowInsets(WindowInsets.systemBars), contentPadding = PaddingValues(16.dp)) {
         item {
             CenterAlignedTopAppBar(title = {
                 Text(
-                    recipe.name,
+                    uiState.recipe.name,
                     style = MaterialTheme.typography.headlineSmall
                 )
             },
@@ -60,7 +67,7 @@ fun ViewRecipeScreen(recipeId: Long, onBack: () -> Unit, modifier: Modifier = Mo
         }
         item {
             Column {
-                recipe.ingredients.forEach {
+                uiState.recipe.ingredients.forEach {
                     ListItem(trailing = {
                         Text("${it.quantity}")
                     }) {

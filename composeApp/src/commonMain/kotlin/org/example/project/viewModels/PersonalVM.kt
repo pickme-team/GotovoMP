@@ -46,7 +46,6 @@ class PersonalVM(private val api: ApiClient = ApiClient(Net.client)): ViewModel(
 
     init {
         subscribeToGlobalEvents()
-        fetchRecipes()
     }
 
     private fun subscribeToGlobalEvents() {
@@ -57,7 +56,7 @@ class PersonalVM(private val api: ApiClient = ApiClient(Net.client)): ViewModel(
                         _state.update { PersonalState() }
                         _ingredientState.update { IngredientState() }
                     }
-                    else -> Unit
+                    GlobalEvent.Login -> fetchRecipes()
                 }
             }
         }

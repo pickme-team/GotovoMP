@@ -54,6 +54,12 @@ class ApiClient(
         }.body()
     }
 
+    suspend fun getRecipeById(id: Long): DomainResult<RecipeDTO> = wrap {
+        httpClient.get {
+            url("recipes/Get/$id")
+        }.body()
+    }
+
     suspend fun getRecipeFeed(): DomainResult<List<RecipeDTO>> = wrap { httpClient.get { url("recipes/GetUserRecipesFeed") }.body() }
 
     suspend fun addRecipe(body: RecipeCreateRequest): DomainResult<HttpResponse> = wrap {
