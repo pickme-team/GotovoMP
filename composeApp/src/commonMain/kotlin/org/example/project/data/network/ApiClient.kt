@@ -71,7 +71,7 @@ class ApiClient(
 
     suspend fun deleteRecipe(id: Long): DomainResult<HttpResponse> = wrap {
         httpClient.delete {
-            url("/recipes/$id")
+            url("/recipes/Delete/$id")
         }
     }
 }
