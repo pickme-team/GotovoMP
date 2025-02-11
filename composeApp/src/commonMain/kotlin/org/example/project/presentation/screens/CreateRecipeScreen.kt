@@ -223,7 +223,7 @@ fun CreateRecipeScreen(
                     onClick = {
                         val merged =
                             steps.mapIndexed { index, step -> step.first.ifBlank { "Шаг ${index + 1}" } + "<br>" + step.second.toMarkdown() }
-                                .reduceOrNull { a, b -> "$a\n$b" }
+                                .reduceOrNull { a, b -> "$a%#*8$b" }
                         viewModel.addRecipe(current.copy(text = merged ?: "", ingredients = ingredientState.current), onCreated)
                         viewModel.cleanIngredients()
                     },

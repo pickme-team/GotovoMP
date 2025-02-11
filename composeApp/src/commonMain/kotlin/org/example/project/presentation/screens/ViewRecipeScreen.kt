@@ -57,7 +57,7 @@ fun ViewRecipeScreen(
     LaunchedEffect(recipeId) {
         viewModel.loadRecipe(recipeId)
     }
-    val richTextState = rememberSaveable(uiState.recipe.text) { uiState.recipe.text.split('\n').map { md ->
+    val richTextState = rememberSaveable(uiState.recipe.text) { uiState.recipe.text.split("%#*8").map { md ->
         md.substringBefore("<br>") to RichTextState().apply { setMarkdown(md.substringAfter("<br>")) }
     } }
     LazyColumn(modifier = modifier.fillMaxSize().consumeWindowInsets(WindowInsets.systemBars), contentPadding = PaddingValues(16.dp),
