@@ -43,9 +43,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.paging.PagingData
+import app.cash.paging.compose.collectAsLazyPagingItems
 import coil3.compose.AsyncImage
 import org.example.project.Const
 import org.example.project.data.network.model.Ingredient
+import org.example.project.data.network.model.RecipeDTO
 import org.example.project.domain.DomainError
 import org.example.project.presentation.util.Nav
 import org.example.project.presentation.util.bouncyClickable
@@ -59,10 +62,13 @@ fun SharedTransitionScope.FeedScreen(
     animatedScope: AnimatedContentScope,
 ) {
     val uiState by feedScreenVM.state.collectAsState()
+    val recipes = feedScreenVM.pager.collectAsLazyPagingItems().also { println(it.itemCount) }
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
         isRefreshing = uiState.isLoading,
-        onRefresh = feedScreenVM::loadRecipes,
+        onRefresh = {
+            recipes.refresh()
+        },
     ) {
         LazyColumn(
             contentPadding = PaddingValues(24.dp),
@@ -87,7 +93,8 @@ fun SharedTransitionScope.FeedScreen(
                     )
                 }
             }
-            items(uiState.recipes, key = { it.id }) { recipe ->
+            items(recipes.itemCount) { index ->
+                val recipe = recipes[index] ?: return@items
                 RecipeCard(
                     title = recipe.name,
                     ingredients = recipe.ingredients,
