@@ -35,7 +35,6 @@ import org.example.project.viewModels.AuthVM
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusChanged
@@ -199,7 +198,8 @@ private fun Register(
     var username by remember { mutableStateOf(TextFieldValue()) }
     var phoneNumber by remember { mutableStateOf(TextFieldValue()) }
     var password by remember { mutableStateOf(TextFieldValue()) }
-    val action = { authVM.tryRegister(firstName.text, lastName.text, username.text, phoneNumber.text, password.text) }
+    val phonePrefix = "+7"
+    val action = { authVM.tryRegister(firstName.text, lastName.text, username.text, phonePrefix + phoneNumber.text, password.text) }
     var lastFocused by remember { mutableStateOf(false) }
     val fm = LocalFocusManager.current
 
@@ -260,14 +260,13 @@ private fun Register(
         val mask = "000 000 00 00"
         val maxLen = mask.count { it != ' ' }
         val maskNum = '0'
-        val prefix = "+7"
         var phoneFocused by remember { mutableStateOf(false) }
         TextLine(
             phoneNumber,
             onValueChange = { if (it.text.length <= maxLen && it.text.all { it.isDigit() }) phoneNumber = it },
             visualTransformation = PhoneVisualTransformation(mask, maskNum),
             keyboardActions = kbdActions,
-            prefix = "$prefix ",
+            prefix = "$phonePrefix ",
             placeholderText = mask,
             modifier = Modifier.fillMaxWidth().onFocusChanged { phoneFocused = it.isFocused },
             isError = phoneValid.isError() && !phoneFocused,

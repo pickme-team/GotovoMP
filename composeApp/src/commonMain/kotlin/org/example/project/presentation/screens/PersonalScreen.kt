@@ -1,5 +1,8 @@
 package org.example.project.presentation.screens
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,22 +53,15 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
+import org.example.project.Const
 import org.example.project.data.network.model.RecipeDTO
 import org.example.project.presentation.util.Nav
 import org.example.project.presentation.util.bouncyClickable
 import org.example.project.viewModels.PersonalVM
 
-private val images = listOf(
-    "https://lobsterfrommaine.com/wp-content/uploads/fly-images/1577/20210517-Pasta-alla-Gricia-with-Lobster3010-1024x576-c.jpg",
-    "https://upload.wikimedia.org/wikipedia/commons/a/a3/Eq_it-na_pizza-margherita_sep2005_sml.jpg",
-    "https://upload.wikimedia.org/wikipedia/commons/8/86/Gnocchi_di_ricotta_burro_e_salvia.jpg",
-    "https://bakesbybrownsugar.com/wp-content/uploads/2019/11/Pecan-Cinnamon-Rolls-84-500x500.jpg",
-    "https://bestlah.sg/wp-content/uploads/2024/07/Best-Peranakan-Food-Singapore.jpeg"
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun PersonalScreen(navCtrl: NavHostController, modifier: Modifier = Modifier, viewModel: PersonalVM) {
+fun SharedTransitionScope.PersonalScreen(navCtrl: NavHostController, modifier: Modifier = Modifier, animatedScope: AnimatedContentScope, viewModel: PersonalVM) {
     val uiState by viewModel.state.collectAsState()
     PullToRefreshBox(
         modifier = modifier.fillMaxSize(),
@@ -74,7 +70,7 @@ fun PersonalScreen(navCtrl: NavHostController, modifier: Modifier = Modifier, vi
     ) {
         LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp)) {
             item {
-                Section(title = "Созданные мной", items = uiState.recipes.recipes, icon = Icons.Default.Favorite, onClick = {
+                Section(title = "Созданные мной", items = uiState.recipes.recipes, animatedScope = animatedScope, icon = Icons.Default.Favorite, onClick = {
                    navCtrl.navigate("${Nav.VIEW.route}/$it")
                 }, actionButton = {
                     SmallFloatingActionButton(onClick = { navCtrl.navigate(Nav.CREATE.route) }, elevation = FloatingActionButtonDefaults.elevation(
@@ -91,8 +87,9 @@ fun PersonalScreen(navCtrl: NavHostController, modifier: Modifier = Modifier, vi
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun Section(title: String, items: List<RecipeDTO>, onClick: (Long) -> Unit, modifier: Modifier = Modifier, icon: ImageVector? = null, actionButton: (@Composable () -> Unit)? = null, delete: (Long) -> Unit) {
+private fun SharedTransitionScope.Section(title: String, items: List<RecipeDTO>, onClick: (Long) -> Unit, modifier: Modifier = Modifier, icon: ImageVector? = null, animatedScope: AnimatedContentScope, actionButton: (@Composable () -> Unit)? = null, delete: (Long) -> Unit) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -109,7 +106,7 @@ private fun Section(title: String, items: List<RecipeDTO>, onClick: (Long) -> Un
         val rowScrollState = rememberLazyListState()
         LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp), state = rowScrollState, contentPadding = PaddingValues(horizontal = 24.dp)) {
             items(items, key = { it.id }) {
-                Recipe(title = it.name, imageUrl = images.random(), onClick = { onClick(it.id) }, delete = { delete(it.id) })
+                Recipe(title = it.name, imageUrl = Const.placeholderImages.random(), onClick = { onClick(it.id) }, delete = { delete(it.id) }, modifier = Modifier.sharedBounds(rememberSharedContentState("view${it.id}"), animatedVisibilityScope = animatedScope))
             }
         }
     }

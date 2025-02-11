@@ -4,6 +4,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
@@ -23,47 +24,63 @@ class ApiClient(
 ) {
     suspend fun singUp(body: SignUpRequest): DomainResult<HttpResponse> = wrap {
         httpClient.post {
-            url("auth/signUp")
+            url("Auth/SignUp")
             setBody(body)
         }.body()
     }
 
     suspend fun singIn(body: SignInWithUsernameRequest): DomainResult<HttpResponse> = wrap {
        httpClient.post {
-           url("auth/signIn")
+           url("Auth/SignIn")
            setBody(body)
        }.body()
     } // TODO("нахуя нам два логина?")
 
     suspend fun singIn(body: SignInWithPhoneNumberRequest): DomainResult<SignInDTO> = wrap {
         httpClient.post {
-            url("auth/signIn")
+            url("Auth/SignIn")
             setBody(body)
         }.body()
     }
 
     suspend fun getUserData(): DomainResult<UserDTO> = wrap {
         httpClient.get {
-            url("auth/get")
+            url("Auth/Get")
         }.body()
     }
 
-    suspend fun getRecipes(): DomainResult<List<RecipeDTO>> = wrap {
+    suspend fun getOwnedRecipes(): DomainResult<List<RecipeDTO>> = wrap {
         httpClient.get {
-            url("recipes")
+            url("recipes/GetUsersRecipes")
+        }.body()
+    }
+
+    suspend fun getRecipeById(id: Long): DomainResult<RecipeDTO> = wrap {
+        httpClient.get {
+            url("recipes/Get/$id")
+        }.body()
+    }
+
+    suspend fun getRecipeFeed(): DomainResult<List<RecipeDTO>> = wrap { httpClient.get { url("recipes/GetUserRecipesFeed") }.body() }
+
+    suspend fun getRecipeFeed(limit: Int, offset: Int): DomainResult<List<RecipeDTO>> = wrap {
+        httpClient.get {
+            url("recipes/GetUserRecipesFeed")
+            parameter("limit", limit)
+            parameter("offset", offset)
         }.body()
     }
 
     suspend fun addRecipe(body: RecipeCreateRequest): DomainResult<HttpResponse> = wrap {
         httpClient.post {
             setBody(body)
-            url("recipes")
+            url("recipes/Add")
         }.body()
     }
 
     suspend fun deleteRecipe(id: Long): DomainResult<HttpResponse> = wrap {
         httpClient.delete {
-            url("/recipes/$id")
+            url("/recipes/Delete/$id")
         }
     }
 }

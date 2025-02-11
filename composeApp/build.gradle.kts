@@ -62,6 +62,9 @@ kotlin {
             implementation(libs.multiplatform.settings.no.arg)
 
             implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc10")
+
+            implementation("app.cash.paging:paging-compose-common:3.3.0-alpha02-0.4.0")
+            implementation("app.cash.paging:paging-common:3.3.0-alpha02-0.4.0")
         }
 
         nativeMain.dependencies {

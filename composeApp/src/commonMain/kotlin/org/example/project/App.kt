@@ -1,6 +1,10 @@
 package org.example.project
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomAppBar
@@ -12,13 +16,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.launch
 import org.example.project.domain.GlobalEvent
 import org.example.project.domain.UI
 import org.example.project.presentation.screens.AuthScreen
@@ -34,7 +36,7 @@ import org.example.project.presentation.util.appLightScheme
 import org.example.project.presentation.util.makeTypography
 import org.example.project.viewModels.PersonalVM
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun App() {
     val navCtrl = rememberNavController()
@@ -87,21 +89,28 @@ fun App() {
                 }
             }) { innerPadding ->
                 val personalVM: PersonalVM = viewModel()
-                NavHost(
-                    modifier = Modifier.padding(innerPadding),
-                    navController = navCtrl,
-                    startDestination = Nav.FEED.route
-                ) {
-                    composable(Nav.FEED.route) { FeedScreen() }
-                    composable(Nav.MINE.route) { PersonalScreen(navCtrl, viewModel = personalVM) }
-                    composable(Nav.PROFILE.route) { ProfileScreen() }
-                    composable(Nav.VIEW.route + "/{id}") {
-                        val recipeId = it.arguments?.getString("id")?.toLong()
-                        if (recipeId != null) {
-                            ViewRecipeScreen(recipeId, onBack = { navCtrl.navigateUp() }, viewModel = personalVM)
+                SharedTransitionLayout {
+                    NavHost(
+                        modifier = Modifier.padding(innerPadding),
+                        navController = navCtrl,
+                        startDestination = Nav.FEED.route,
+                        enterTransition = { fadeIn() },
+                        exitTransition = { fadeOut() },
+                    ) {
+                        composable(Nav.FEED.route) { FeedScreen(navCtrl, animatedScope = this@composable) }
+                        composable(Nav.MINE.route) { PersonalScreen(navCtrl, viewModel = personalVM, animatedScope = this@composable) }
+                        composable(Nav.PROFILE.route) { ProfileScreen() }
+                        composable(Nav.VIEW.route + "/{id}") {
+                            val recipeId = it.arguments?.getString("id")?.toLong()
+                            if (recipeId != null) {
+                                ViewRecipeScreen(recipeId, onBack = { navCtrl.navigateUp() }, modifier = Modifier.sharedBounds(
+                                    rememberSharedContentState("view${recipeId}"),
+                                    animatedVisibilityScope = this@composable
+                                ))
+                            }
                         }
+                        composable(Nav.CREATE.route) { CreateRecipeScreen(onCreated = { navCtrl.navigateUp() }, viewModel = personalVM) }
                     }
-                    composable(Nav.CREATE.route) { CreateRecipeScreen(onCreated = { navCtrl.navigateUp() }, viewModel = personalVM) }
                 }
             }
         } else {

@@ -1,18 +1,24 @@
 package org.example.project.presentation.screens
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ListItem
-import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
@@ -23,30 +29,44 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
 import com.mohamedrejeb.richeditor.model.RichTextState
-import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
-import org.example.project.viewModels.PersonalVM
+import org.example.project.Const
+import org.example.project.viewModels.ViewRecipeVM
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun ViewRecipeScreen(recipeId: Long, onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: PersonalVM) {
-    val recipe = viewModel.state.collectAsState().value.recipes.recipes.find { it.id == recipeId } ?: return
-    val richTextState = rememberSaveable(recipe.text) { recipe.text.split('\n').map { md ->
+fun ViewRecipeScreen(
+    recipeId: Long,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ViewRecipeVM = viewModel(),
+) {
+    val uiState by viewModel.state.collectAsState()
+    LaunchedEffect(recipeId) {
+        viewModel.loadRecipe(recipeId)
+    }
+    val richTextState = rememberSaveable(uiState.recipe.text) { uiState.recipe.text.split('\n').map { md ->
         md.substringBefore("<br>") to RichTextState().apply { setMarkdown(md.substringAfter("<br>")) }
     } }
-    LazyColumn(modifier = modifier.consumeWindowInsets(WindowInsets.systemBars), contentPadding = PaddingValues(16.dp)) {
+    LazyColumn(modifier = modifier.fillMaxSize().consumeWindowInsets(WindowInsets.systemBars), contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
             CenterAlignedTopAppBar(title = {
                 Text(
-                    recipe.name,
-                    style = MaterialTheme.typography.headlineSmall
+                    uiState.recipe.name,
+                    style = MaterialTheme.typography.headlineSmall,
                 )
             },
                 modifier = Modifier.padding(bottom = 16.dp),
@@ -59,12 +79,17 @@ fun ViewRecipeScreen(recipeId: Long, onBack: () -> Unit, modifier: Modifier = Mo
                 })
         }
         item {
-            Column {
-                recipe.ingredients.forEach {
-                    ListItem(trailing = {
-                        Text("${it.quantity}")
-                    }) {
-                        Text(it.name, style = MaterialTheme.typography.bodyLarge)
+            Row(modifier = Modifier.fillParentMaxWidth()) {
+                Column(modifier = Modifier.weight(0.4f)) {
+                    AsyncImage(model = Const.placeholderImages.random(), contentScale = ContentScale.Crop, modifier = Modifier.aspectRatio(.8f).clip(MaterialTheme.shapes.medium), contentDescription = null)
+                }
+                Column(modifier = Modifier.weight(0.6f)) {
+                    uiState.recipe.ingredients.forEach {
+                        ListItem(trailing = {
+                            Text("${it.quantity}")
+                        }) {
+                            Text(it.name, style = MaterialTheme.typography.bodyLarge)
+                        }
                     }
                 }
             }
@@ -76,7 +101,6 @@ fun ViewRecipeScreen(recipeId: Long, onBack: () -> Unit, modifier: Modifier = Mo
                     RichText(it.second, fontSize = MaterialTheme.typography.bodyLarge.fontSize)
                 }
             }
-            Spacer(modifier = Modifier.padding(bottom = 16.dp))
         }
     }
 }
