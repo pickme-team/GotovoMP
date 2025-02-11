@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class RecipeDTO(
     val id: Long,
     val name: String,
-    val authorId: Long,
+    val author: UserDTO,
     val text: String,
     val tags: List<String>,
     val ingredients: List<Ingredient>,
