@@ -9,12 +9,18 @@ import kotlinx.coroutines.launch
 import org.example.project.data.network.ApiClient
 import org.example.project.data.network.Net
 import org.example.project.data.network.model.RecipeDTO
+import org.example.project.data.network.model.UserDTO
 import org.example.project.domain.DomainError
 import org.example.project.domain.otherwise
 import org.example.project.domain.unwrap
 
 data class RecipeVMState(
-    val recipe: RecipeDTO = RecipeDTO(id = 0, name = "", text = "", ingredients = listOf(), authorId = 0, tags = emptyList()),
+    val recipe: RecipeDTO = RecipeDTO(id = 0, name = "", text = "", ingredients = listOf(), author = UserDTO(
+        username = "",
+        firstName = "",
+        lastName = "",
+        phoneNumber = ""
+    ), tags = emptyList()),
     val isLoading: Boolean = true,
     val error: DomainError? = null
 )
