@@ -77,7 +77,7 @@ fun SharedTransitionScope.FeedScreen(
         ) {
             item {
                 Text(
-                    "Рекомендации",
+                    "Rекоmендации",
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.fillMaxWidth()
                 )

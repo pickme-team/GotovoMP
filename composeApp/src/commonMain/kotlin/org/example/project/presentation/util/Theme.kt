@@ -16,6 +16,8 @@ import gotovomp.composeapp.generated.resources.cabin_italic
 import gotovomp.composeapp.generated.resources.cabin_medium
 import gotovomp.composeapp.generated.resources.cabin_regular
 import gotovomp.composeapp.generated.resources.cabin_semibold
+import gotovomp.composeapp.generated.resources.engry
+import gotovomp.composeapp.generated.resources.flanker_griffo_bold
 import gotovomp.composeapp.generated.resources.plus_jakarta_sans_regular
 import gotovomp.composeapp.generated.resources.unbounded_light
 import gotovomp.composeapp.generated.resources.unbounded_medium
@@ -34,16 +36,16 @@ fun makeTypography(): Typography {
   val displayFontFamily =
       FontFamily(
           Font(
-              Res.font.unbounded_medium,
-              weight = FontWeight.Normal,
+              Res.font.flanker_griffo_bold,
+              weight = FontWeight.W700,
               style = FontStyle.Normal))
   return Typography(
       displayLarge = baseline.displayLarge.copy(fontFamily = displayFontFamily),
       displayMedium = baseline.displayMedium.copy(fontFamily = displayFontFamily),
       displaySmall = baseline.displaySmall.copy(fontFamily = displayFontFamily),
-      headlineLarge = baseline.headlineLarge.copy(fontFamily = displayFontFamily),
-      headlineMedium = baseline.headlineMedium.copy(fontFamily = displayFontFamily),
-      headlineSmall = baseline.headlineSmall.copy(fontFamily = displayFontFamily),
+      headlineLarge = baseline.headlineLarge.copy(fontFamily = bodyFontFamily),
+      headlineMedium = baseline.headlineMedium.copy(fontFamily = bodyFontFamily),
+      headlineSmall = baseline.headlineSmall.copy(fontFamily = bodyFontFamily),
       titleLarge = baseline.titleLarge.copy(fontFamily = bodyFontFamily),
       titleMedium = baseline.titleMedium.copy(fontFamily = bodyFontFamily),
       titleSmall = baseline.titleSmall.copy(fontFamily = bodyFontFamily),

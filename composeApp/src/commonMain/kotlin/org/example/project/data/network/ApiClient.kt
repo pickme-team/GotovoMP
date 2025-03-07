@@ -34,7 +34,7 @@ class ApiClient(
            url("Auth/SignIn")
            setBody(body)
        }.body()
-    } // TODO("нахуя нам два логина?")
+    }
 
     suspend fun singIn(body: SignInWithPhoneNumberRequest): DomainResult<SignInDTO> = wrap {
         httpClient.post {

@@ -92,7 +92,7 @@ class PersonalVM(private val api: ApiClient = ApiClient(Net.client)): ViewModel(
             _state.update { it.copy(isLoading = false) }
             callback()
         }
-    } //TODO("А поч это не в корутине? А то оно в логах пишет, что фреймы пропускаются")
+    }
 
     private suspend fun createRecipe(recipe: RecipeCreateRequest) {
         SettingsManager.token.nullIfBlank()?.let {
