@@ -16,7 +16,7 @@ import org.example.project.data.local.settings.SettingsManager
 import org.example.project.nullIfBlank
 
 object Net {
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private const val BASE_URL = "https://tarakoshka.tech/gotovo/"
 
     val client = HttpClient {
         install(Logging) {
@@ -27,6 +27,7 @@ object Net {
                 prettyPrint = true
                 isLenient = true
                 ignoreUnknownKeys = true
+                encodeDefaults = true
             })
         }
         defaultRequest {
