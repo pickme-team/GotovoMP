@@ -17,43 +17,79 @@ import gotovomp.composeapp.generated.resources.cabin_medium
 import gotovomp.composeapp.generated.resources.cabin_regular
 import gotovomp.composeapp.generated.resources.cabin_semibold
 import gotovomp.composeapp.generated.resources.plus_jakarta_sans_regular
+import gotovomp.composeapp.generated.resources.shantellsans_bold
+import gotovomp.composeapp.generated.resources.shantellsans_bolditalic
+import gotovomp.composeapp.generated.resources.shantellsans_italic
+import gotovomp.composeapp.generated.resources.shantellsans_light
+import gotovomp.composeapp.generated.resources.shantellsans_lightitalic
+import gotovomp.composeapp.generated.resources.shantellsans_medium
+import gotovomp.composeapp.generated.resources.shantellsans_mediumitalic
+import gotovomp.composeapp.generated.resources.shantellsans_regular
+import gotovomp.composeapp.generated.resources.shantellsans_semibold
+import gotovomp.composeapp.generated.resources.shantellsans_semibolditalic
 import gotovomp.composeapp.generated.resources.unbounded_light
 import gotovomp.composeapp.generated.resources.unbounded_medium
 import org.jetbrains.compose.resources.Font
 
 @Composable
 fun makeTypography(): Typography {
-  val baseline = Typography()
-  val bodyFontFamily =
-      FontFamily(
-          Font(Res.font.cabin_regular, weight = FontWeight.Normal, style = FontStyle.Normal),
-          Font(Res.font.cabin_medium, weight = FontWeight.Medium, style = FontStyle.Normal),
-          Font(Res.font.cabin_bold, weight = FontWeight.Bold, style = FontStyle.Normal),
-          Font(Res.font.cabin_semibold, weight = FontWeight.SemiBold, style = FontStyle.Normal),
-          Font(Res.font.cabin_italic, weight = FontWeight.Normal, style = FontStyle.Italic))
-  val displayFontFamily =
-      FontFamily(
-          Font(
-              Res.font.unbounded_medium,
-              weight = FontWeight.Normal,
-              style = FontStyle.Normal))
-  return Typography(
-      displayLarge = baseline.displayLarge.copy(fontFamily = displayFontFamily),
-      displayMedium = baseline.displayMedium.copy(fontFamily = displayFontFamily),
-      displaySmall = baseline.displaySmall.copy(fontFamily = displayFontFamily),
-      headlineLarge = baseline.headlineLarge.copy(fontFamily = displayFontFamily),
-      headlineMedium = baseline.headlineMedium.copy(fontFamily = displayFontFamily),
-      headlineSmall = baseline.headlineSmall.copy(fontFamily = displayFontFamily),
-      titleLarge = baseline.titleLarge.copy(fontFamily = bodyFontFamily),
-      titleMedium = baseline.titleMedium.copy(fontFamily = bodyFontFamily),
-      titleSmall = baseline.titleSmall.copy(fontFamily = bodyFontFamily),
-      bodyLarge = baseline.bodyLarge.copy(fontFamily = bodyFontFamily),
-      bodyMedium = baseline.bodyMedium.copy(fontFamily = bodyFontFamily),
-      bodySmall = baseline.bodySmall.copy(fontFamily = bodyFontFamily),
-      labelLarge = baseline.labelLarge.copy(fontFamily = bodyFontFamily),
-      labelMedium = baseline.labelMedium.copy(fontFamily = bodyFontFamily),
-      labelSmall = baseline.labelSmall.copy(fontFamily = bodyFontFamily),
-  )
+    val baseline = Typography()
+    val bodyFontFamily = FontFamily(
+        Font(Res.font.cabin_regular, weight = FontWeight.Normal, style = FontStyle.Normal),
+        Font(Res.font.cabin_medium, weight = FontWeight.Medium, style = FontStyle.Normal),
+        Font(Res.font.cabin_bold, weight = FontWeight.Bold, style = FontStyle.Normal),
+        Font(Res.font.cabin_semibold, weight = FontWeight.SemiBold, style = FontStyle.Normal),
+        Font(Res.font.cabin_italic, weight = FontWeight.Normal, style = FontStyle.Italic)
+    )
+    val displayFontFamily = FontFamily(
+        Font(
+            Res.font.shantellsans_light, weight = FontWeight.Light, style = FontStyle.Normal
+        ),
+        Font(
+            Res.font.shantellsans_lightitalic, weight = FontWeight.Light, style = FontStyle.Italic
+        ),
+        Font(
+            Res.font.shantellsans_regular, weight = FontWeight.Normal, style = FontStyle.Normal
+        ),
+        Font(
+            Res.font.shantellsans_italic, weight = FontWeight.Normal, style = FontStyle.Italic
+        ),
+        Font(
+            Res.font.shantellsans_mediumitalic, weight = FontWeight.Medium, style = FontStyle.Normal
+        ),
+        Font(
+            Res.font.shantellsans_medium, weight = FontWeight.Medium, style = FontStyle.Italic
+        ),
+        Font(
+            Res.font.shantellsans_semibold, weight = FontWeight.SemiBold, style = FontStyle.Normal
+        ),
+        Font(
+            Res.font.shantellsans_semibolditalic, weight = FontWeight.SemiBold, style = FontStyle.Italic
+        ),
+        Font(
+            Res.font.shantellsans_bold, weight = FontWeight.Bold, style = FontStyle.Normal
+        ),
+        Font(
+            Res.font.shantellsans_bolditalic, weight = FontWeight.Bold, style = FontStyle.Italic
+        ),
+    )
+    return Typography(
+        displayLarge = baseline.displayLarge.copy(fontFamily = displayFontFamily),
+        displayMedium = baseline.displayMedium.copy(fontFamily = displayFontFamily),
+        displaySmall = baseline.displaySmall.copy(fontFamily = displayFontFamily),
+        headlineLarge = baseline.headlineLarge.copy(fontFamily = displayFontFamily),
+        headlineMedium = baseline.headlineMedium.copy(fontFamily = displayFontFamily),
+        headlineSmall = baseline.headlineSmall.copy(fontFamily = displayFontFamily),
+        titleLarge = baseline.titleLarge.copy(fontFamily = bodyFontFamily),
+        titleMedium = baseline.titleMedium.copy(fontFamily = bodyFontFamily),
+        titleSmall = baseline.titleSmall.copy(fontFamily = bodyFontFamily),
+        bodyLarge = baseline.bodyLarge.copy(fontFamily = bodyFontFamily),
+        bodyMedium = baseline.bodyMedium.copy(fontFamily = bodyFontFamily),
+        bodySmall = baseline.bodySmall.copy(fontFamily = bodyFontFamily),
+        labelLarge = baseline.labelLarge.copy(fontFamily = bodyFontFamily),
+        labelMedium = baseline.labelMedium.copy(fontFamily = bodyFontFamily),
+        labelSmall = baseline.labelSmall.copy(fontFamily = bodyFontFamily),
+    )
 }
 
 val primaryLight = Color(0xFF87521B)
@@ -128,80 +164,78 @@ val surfaceContainerDark = Color(0xFF261E18)
 val surfaceContainerHighDark = Color(0xFF312822)
 val surfaceContainerHighestDark = Color(0xFF3C332C)
 
-val appLightScheme =
-    lightColorScheme(
-        primary = primaryLight,
-        onPrimary = onPrimaryLight,
-        primaryContainer = primaryContainerLight,
-        onPrimaryContainer = onPrimaryContainerLight,
-        secondary = secondaryLight,
-        onSecondary = onSecondaryLight,
-        secondaryContainer = secondaryContainerLight,
-        onSecondaryContainer = onSecondaryContainerLight,
-        tertiary = tertiaryLight,
-        onTertiary = onTertiaryLight,
-        tertiaryContainer = tertiaryContainerLight,
-        onTertiaryContainer = onTertiaryContainerLight,
-        error = errorLight,
-        onError = onErrorLight,
-        errorContainer = errorContainerLight,
-        onErrorContainer = onErrorContainerLight,
-        background = backgroundLight,
-        onBackground = onBackgroundLight,
-        surface = surfaceLight,
-        onSurface = onSurfaceLight,
-        surfaceVariant = surfaceVariantLight,
-        onSurfaceVariant = onSurfaceVariantLight,
-        outline = outlineLight,
-        outlineVariant = outlineVariantLight,
-        scrim = scrimLight,
-        inverseSurface = inverseSurfaceLight,
-        inverseOnSurface = inverseOnSurfaceLight,
-        inversePrimary = inversePrimaryLight,
-        surfaceDim = surfaceDimLight,
-        surfaceBright = surfaceBrightLight,
-        surfaceContainerLowest = surfaceContainerLowestLight,
-        surfaceContainerLow = surfaceContainerLowLight,
-        surfaceContainer = surfaceContainerLight,
-        surfaceContainerHigh = surfaceContainerHighLight,
-        surfaceContainerHighest = surfaceContainerHighestLight,
-    )
+val appLightScheme = lightColorScheme(
+    primary = primaryLight,
+    onPrimary = onPrimaryLight,
+    primaryContainer = primaryContainerLight,
+    onPrimaryContainer = onPrimaryContainerLight,
+    secondary = secondaryLight,
+    onSecondary = onSecondaryLight,
+    secondaryContainer = secondaryContainerLight,
+    onSecondaryContainer = onSecondaryContainerLight,
+    tertiary = tertiaryLight,
+    onTertiary = onTertiaryLight,
+    tertiaryContainer = tertiaryContainerLight,
+    onTertiaryContainer = onTertiaryContainerLight,
+    error = errorLight,
+    onError = onErrorLight,
+    errorContainer = errorContainerLight,
+    onErrorContainer = onErrorContainerLight,
+    background = backgroundLight,
+    onBackground = onBackgroundLight,
+    surface = surfaceLight,
+    onSurface = onSurfaceLight,
+    surfaceVariant = surfaceVariantLight,
+    onSurfaceVariant = onSurfaceVariantLight,
+    outline = outlineLight,
+    outlineVariant = outlineVariantLight,
+    scrim = scrimLight,
+    inverseSurface = inverseSurfaceLight,
+    inverseOnSurface = inverseOnSurfaceLight,
+    inversePrimary = inversePrimaryLight,
+    surfaceDim = surfaceDimLight,
+    surfaceBright = surfaceBrightLight,
+    surfaceContainerLowest = surfaceContainerLowestLight,
+    surfaceContainerLow = surfaceContainerLowLight,
+    surfaceContainer = surfaceContainerLight,
+    surfaceContainerHigh = surfaceContainerHighLight,
+    surfaceContainerHighest = surfaceContainerHighestLight,
+)
 
-val appDarkScheme =
-    darkColorScheme(
-        primary = primaryDark,
-        onPrimary = onPrimaryDark,
-        primaryContainer = primaryContainerDark,
-        onPrimaryContainer = onPrimaryContainerDark,
-        secondary = secondaryDark,
-        onSecondary = onSecondaryDark,
-        secondaryContainer = secondaryContainerDark,
-        onSecondaryContainer = onSecondaryContainerDark,
-        tertiary = tertiaryDark,
-        onTertiary = onTertiaryDark,
-        tertiaryContainer = tertiaryContainerDark,
-        onTertiaryContainer = onTertiaryContainerDark,
-        error = errorDark,
-        onError = onErrorDark,
-        errorContainer = errorContainerDark,
-        onErrorContainer = onErrorContainerDark,
-        background = backgroundDark,
-        onBackground = onBackgroundDark,
-        surface = surfaceDark,
-        onSurface = onSurfaceDark,
-        surfaceVariant = surfaceVariantDark,
-        onSurfaceVariant = onSurfaceVariantDark,
-        outline = outlineDark,
-        outlineVariant = outlineVariantDark,
-        scrim = scrimDark,
-        inverseSurface = inverseSurfaceDark,
-        inverseOnSurface = inverseOnSurfaceDark,
-        inversePrimary = inversePrimaryDark,
-        surfaceDim = surfaceDimDark,
-        surfaceBright = surfaceBrightDark,
-        surfaceContainerLowest = surfaceContainerLowestDark,
-        surfaceContainerLow = surfaceContainerLowDark,
-        surfaceContainer = surfaceContainerDark,
-        surfaceContainerHigh = surfaceContainerHighDark,
-        surfaceContainerHighest = surfaceContainerHighestDark,
-    )
+val appDarkScheme = darkColorScheme(
+    primary = primaryDark,
+    onPrimary = onPrimaryDark,
+    primaryContainer = primaryContainerDark,
+    onPrimaryContainer = onPrimaryContainerDark,
+    secondary = secondaryDark,
+    onSecondary = onSecondaryDark,
+    secondaryContainer = secondaryContainerDark,
+    onSecondaryContainer = onSecondaryContainerDark,
+    tertiary = tertiaryDark,
+    onTertiary = onTertiaryDark,
+    tertiaryContainer = tertiaryContainerDark,
+    onTertiaryContainer = onTertiaryContainerDark,
+    error = errorDark,
+    onError = onErrorDark,
+    errorContainer = errorContainerDark,
+    onErrorContainer = onErrorContainerDark,
+    background = backgroundDark,
+    onBackground = onBackgroundDark,
+    surface = surfaceDark,
+    onSurface = onSurfaceDark,
+    surfaceVariant = surfaceVariantDark,
+    onSurfaceVariant = onSurfaceVariantDark,
+    outline = outlineDark,
+    outlineVariant = outlineVariantDark,
+    scrim = scrimDark,
+    inverseSurface = inverseSurfaceDark,
+    inverseOnSurface = inverseOnSurfaceDark,
+    inversePrimary = inversePrimaryDark,
+    surfaceDim = surfaceDimDark,
+    surfaceBright = surfaceBrightDark,
+    surfaceContainerLowest = surfaceContainerLowestDark,
+    surfaceContainerLow = surfaceContainerLowDark,
+    surfaceContainer = surfaceContainerDark,
+    surfaceContainerHigh = surfaceContainerHighDark,
+    surfaceContainerHighest = surfaceContainerHighestDark,
+)

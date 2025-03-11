@@ -142,7 +142,6 @@ fun RecipeCard(recipe: RecipeDTO, imageUrl: String, onClick: () -> Unit, modifie
                 modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(text = recipe.author.run { firstName?.plus(" ")?.plus(lastName) ?: username }, color = fadeInverse, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 24.sp))
                 Text(
                     text = recipe.name,
                     overflow = TextOverflow.Ellipsis,
@@ -156,6 +155,7 @@ fun RecipeCard(recipe: RecipeDTO, imageUrl: String, onClick: () -> Unit, modifie
                         lineCount = it.lineCount
                     },
                 )
+                Text(text = recipe.author.run { firstName?.plus(" ")?.plus(lastName) ?: username }, color = fadeInverse, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 24.sp))
                 recipe.ingredients.run {
                     if (isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         forEach {
