@@ -1,6 +1,8 @@
 package org.example.project.data.network.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @Serializable
 data class RecipeDTO(
@@ -30,6 +32,7 @@ data class RecipeCreateRequest(
     val text: String,
     val tags: List<String>,
     val ingredients: List<IngredientCreateRequest>,
+    val author: Map<String, String> = emptyMap(),
 )
 
 @Serializable
