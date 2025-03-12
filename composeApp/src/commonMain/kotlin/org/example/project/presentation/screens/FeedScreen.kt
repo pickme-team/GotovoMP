@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
@@ -100,7 +101,7 @@ fun SharedTransitionScope.FeedScreen(
                     recipe = recipe,
                     imageUrl = Const.placeholderImages.random(),
                     onClick = { navCtrl.navigate(Nav.VIEW.route + "/${recipe.id}") },
-                    modifier = Modifier.sharedBounds(
+                    modifier = Modifier.animateItem().sharedBounds(
                         rememberSharedContentState("view${recipe.id}",),
                         animatedVisibilityScope = animatedScope
                     )
@@ -155,14 +156,14 @@ fun RecipeCard(recipe: RecipeDTO, imageUrl: String, onClick: () -> Unit, modifie
                         lineCount = it.lineCount
                     },
                 )
-                Text(text = recipe.author.run { firstName?.plus(" ")?.plus(lastName) ?: username }, color = fadeInverse, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 24.sp))
                 recipe.ingredients.run {
-                    if (isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Card(shape = MaterialTheme.shapes.small, colors = CardDefaults.outlinedCardColors(containerColor = fadeInverse, contentColor = fadeColor)) {
+                            Text(text = recipe.author.run { firstName?.plus(" ")?.plus(lastName) ?: username }, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+                        }
                         forEach {
-                            OutlinedCard(shape = MaterialTheme.shapes.large, colors = CardDefaults.outlinedCardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer
-                            )) {
-                                Text(it.name, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp), fontWeight = FontWeight.Bold)
+                            Card(shape = MaterialTheme.shapes.large, colors = CardDefaults.outlinedCardColors(containerColor = fadeInverse, contentColor = fadeColor)) {
+                                Text(it.name, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp), fontStyle = FontStyle.Italic)
                             }
                         }
                         Spacer(modifier = Modifier.padding(bottom = 16.dp))

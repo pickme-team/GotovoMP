@@ -6,6 +6,8 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
@@ -40,6 +42,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Badge
 import androidx.compose.material.Chip
+import androidx.compose.material.ChipColors
+import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
@@ -55,6 +59,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
@@ -63,6 +68,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -224,7 +230,11 @@ fun CreateRecipeScreen(
                         val merged =
                             steps.mapIndexed { index, step -> step.first.ifBlank { "Шаг ${index + 1}" } + "<br>" + step.second.toMarkdown() }
                                 .reduceOrNull { a, b -> "$a%#*8$b" }
-                        viewModel.addRecipe(current.copy(text = merged ?: "", ingredients = ingredientState.current), onCreated)
+                        viewModel.addRecipe(
+                            current.copy(
+                                text = merged ?: "", ingredients = ingredientState.current
+                            ), onCreated
+                        )
                         viewModel.cleanIngredients()
                     },
                     shape = MaterialTheme.shapes.medium
@@ -247,38 +257,52 @@ fun CreateRecipeScreen(
 fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifier = Modifier) {
     val uiState by viewModel.ingredientState.collectAsState()
     var showAddUi by remember { mutableStateOf(false) }
-    LazyColumn(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         item {
             SearchBar(
                 query = uiState.query to viewModel::updateIngredientQuery,
                 showAddUi = showAddUi,
                 onShowAddUi = { showAddUi = !showAddUi },
-                onBack = onBack
+                onBack = onBack,
+                modifier = Modifier.padding(bottom = 8.dp),
             )
         }
         item {
-            CreateIngredientCard(
-                modifier = Modifier.padding(horizontal = 16.dp),
+            CreateIngredientCard(modifier = Modifier.padding(horizontal = 16.dp),
                 show = showAddUi,
                 onCreated = {
                     viewModel.addIngredient(it)
                 })
         }
         item {
-            FlowRow(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                uiState.current.forEachIndexed { index, it ->
-                    Chip(onClick = { viewModel.removeIngredientAt(index) }) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(
-                                it.name, modifier = Modifier.padding(8.dp)
+            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 4.dp) {
+                FlowRow(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    uiState.current.forEachIndexed { index, it ->
+                        Chip(
+                            onClick = { viewModel.removeIngredientAt(index) },
+                            colors = ChipDefaults.chipColors(
+                                backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Text(
-                                it.quantity.toString(), modifier = Modifier.padding(8.dp)
-                            )
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    it.name, modifier = Modifier.padding(8.dp)
+                                )
+                                Text(
+                                    it.quantity.toString(), modifier = Modifier.padding(8.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -298,6 +322,7 @@ private fun SearchBar(
     showAddUi: Boolean,
     onShowAddUi: () -> Unit,
     onBack: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val fr = remember { FocusRequester() }
     val fm = LocalFocusManager.current
@@ -314,7 +339,7 @@ private fun SearchBar(
             errorIndicatorColor = Color.Transparent
         ),
         leadingIcon = {
-            IconButton(onClick = {
+            IconButton(modifier = Modifier.padding(start = 4.dp), onClick = {
                 fm.clearFocus()
                 query.second("")
                 onBack()
@@ -328,7 +353,7 @@ private fun SearchBar(
             fm.clearFocus()
         }),
         trailingIcon = {
-            IconButton(onClick = onShowAddUi) {
+            IconButton(modifier = Modifier.padding(end = 4.dp), onClick = onShowAddUi) {
                 if (showAddUi) {
                     Icon(Icons.Default.KeyboardArrowUp, contentDescription = "скрыть")
                 } else {
@@ -338,7 +363,7 @@ private fun SearchBar(
         },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         textStyle = MaterialTheme.typography.headlineSmall,
-        modifier = Modifier.fillMaxWidth().onFocusChanged { isFocused = it.isFocused }
+        modifier = modifier.fillMaxWidth().onFocusChanged { isFocused = it.isFocused }
             .focusRequester(fr).padding(horizontal = shape).padding(top = shape.div(2)))
 }
 
@@ -349,7 +374,7 @@ private fun CreateIngredientCard(
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
-        show, modifier = modifier, enter = expandVertically(), exit = shrinkVertically()
+        show, modifier = modifier, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()
     ) {
         var name by remember { mutableStateOf("") }
         var quantity by remember { mutableStateOf(1L) }
@@ -359,7 +384,7 @@ private fun CreateIngredientCard(
             Column(
                 modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("Добавить ингридиент", style = MaterialTheme.typography.headlineSmall)
+                Text("Добавить ингридиент", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 4.dp))
                 OutlinedTextField(
                     name,
                     textStyle = MaterialTheme.typography.bodyLarge,

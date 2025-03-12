@@ -100,26 +100,6 @@ fun StepTextField(
                                     style = headlineSmall.copy(fontStyle = FontStyle.Italic)
                                 )
                             }
-                            Button(
-                                contentPadding = PaddingValues(4.dp),
-                                shape = MaterialTheme.shapes.medium,
-                                colors = if (richTextState.currentSpanStyle.fontSize == headlineMedium.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
-                                onClick = { richTextState.toggleSpanStyle(spanStyle = headlineMedium.toSpanStyle()) }) {
-                                Text(
-                                    "H1",
-                                    style = headlineSmall
-                                )
-                            }
-                            Button(
-                                contentPadding = PaddingValues(4.dp),
-                                shape = MaterialTheme.shapes.medium,
-                                colors = if (richTextState.currentSpanStyle.fontSize == headlineSmall.fontSize) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
-                                onClick = { richTextState.toggleSpanStyle(spanStyle = headlineSmall.toSpanStyle()) }) {
-                                Text(
-                                    "H2",
-                                    style = headlineSmall
-                                )
-                            }
                         }
                     }
                 } }
