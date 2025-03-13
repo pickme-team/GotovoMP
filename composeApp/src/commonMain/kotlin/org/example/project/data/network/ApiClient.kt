@@ -36,7 +36,7 @@ class ApiClient(
            url("Auth/SignIn")
            setBody(body)
        }.body()
-    } // TODO("нахуя нам два логина?")
+    } // TODO реализовать ингридиенты
 
     suspend fun singIn(body: SignInWithPhoneNumberRequest): DomainResult<SignInDTO> = wrap {
         httpClient.post {
@@ -62,8 +62,6 @@ class ApiClient(
             url("recipes/Get/$id")
         }.body()
     }
-
-    suspend fun getRecipeFeed(): DomainResult<List<RecipeDTO>> = wrap { httpClient.get { url("recipes/GetUserRecipesFeed") }.body() }
 
     suspend fun getRecipeFeed(limit: Int, offset: Int): DomainResult<List<RecipeDTO>> = wrap {
         httpClient.get {

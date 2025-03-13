@@ -65,6 +65,9 @@ kotlin {
 
             implementation("app.cash.paging:paging-compose-common:3.3.0-alpha02-0.4.0")
             implementation("app.cash.paging:paging-common:3.3.0-alpha02-0.4.0")
+
+            implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
         }
 
         nativeMain.dependencies {
