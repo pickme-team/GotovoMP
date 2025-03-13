@@ -68,7 +68,7 @@ fun AlternativeRecipeCard(
         MaterialTheme.colorScheme.run { if (isSystemInDarkTheme()) onBackground else background }
 
     Card(
-        modifier = modifier.fillMaxWidth().bouncyClickable(onClick),
+        modifier = modifier.fillMaxWidth().clickable { onClick() },
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.primary
@@ -77,7 +77,7 @@ fun AlternativeRecipeCard(
         Column(Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(Modifier.size(36.dp).clip(CircleShape).background(color = tertiaryDark))
