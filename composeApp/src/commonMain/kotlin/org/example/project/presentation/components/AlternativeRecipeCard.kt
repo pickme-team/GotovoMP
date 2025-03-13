@@ -1,7 +1,6 @@
 package org.example.project.presentation.components
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -68,11 +67,8 @@ fun AlternativeRecipeCard(
     val fadeInverse =
         MaterialTheme.colorScheme.run { if (isSystemInDarkTheme()) onBackground else background }
 
-
-
     Card(
-        modifier = modifier.fillMaxWidth()
-            .clickable(onClick = onClick).aspectRatio(0.6f),
+        modifier = modifier.fillMaxWidth().bouncyClickable(onClick),
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.primary
@@ -80,22 +76,20 @@ fun AlternativeRecipeCard(
     ) {
         Column(Modifier.fillMaxWidth()) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(8.dp).weight(1f),
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(modifier.size(36.dp).clip(CircleShape).background(color = tertiaryDark)) {
-
-                }
-                Spacer(Modifier.size(4.dp))
+                Box(Modifier.size(36.dp).clip(CircleShape).background(color = tertiaryDark))
                 Text(
                     text = recipe.author.run { firstName?.plus(" ")?.plus(lastName) ?: username },
                     style = MaterialTheme.typography.titleMedium
                 )
             }
-            Box(modifier = Modifier.fillMaxWidth().weight(7f), contentAlignment = Alignment.BottomStart) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.BottomStart) {
                 var lineCount by remember { mutableStateOf(1) }
                 AsyncImage(
-                    modifier = Modifier.fillMaxWidth().drawWithContent {
+                    modifier = Modifier.fillMaxWidth().aspectRatio(0.6f).drawWithContent {
                         drawContent()
                         drawRect(
                             brush = Brush.verticalGradient(
@@ -129,12 +123,12 @@ fun AlternativeRecipeCard(
                     "Ингредиенты:",
                     modifier = Modifier.padding(horizontal = 12.dp),
                 )
-                var expandIngridients by remember { mutableStateOf(false) }
-                AnimatedContent(expandIngridients) { expanded ->
+                var expandIngredients by remember { mutableStateOf(false) }
+                AnimatedContent(expandIngredients) { expanded ->
                     if (expanded) {
                         recipe.ingredients.run {
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.padding(horizontal = 12.dp).clickable { expandIngridients = !expandIngridients }) {
+                                modifier = Modifier.padding(horizontal = 12.dp).clickable { expandIngredients = !expandIngredients }) {
                                 forEach {
                                     OutlinedCard(shape = MaterialTheme.shapes.large, colors = CardDefaults.outlinedCardColors(containerColor = fadeInverse, contentColor = fadeColor)) {
                                         Text(it.name, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), fontStyle = FontStyle.Italic)
@@ -144,7 +138,7 @@ fun AlternativeRecipeCard(
                         }
 
                     } else {
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.clickable { expandIngridients = !expandIngridients }) {
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.clickable { expandIngredients = !expandIngredients }) {
                             item {
                                 Spacer(Modifier.width(4.dp))
                             }
@@ -160,7 +154,7 @@ fun AlternativeRecipeCard(
                     }
                 }
             }
-            Row(modifier = Modifier.fillMaxWidth().weight(1f).background(color = MaterialTheme.colorScheme.surfaceContainerHigh), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.fillMaxWidth().background(color = MaterialTheme.colorScheme.surfaceContainerHigh), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton({}, modifier = Modifier.padding(start = 4.dp)) { Icon(Icons.Outlined.ThumbUp, contentDescription = "Like") }
                 IconButton({}) { Icon(Icons.Outlined.Add, contentDescription = "Comment") }
                 IconButton({}) { Icon(Icons.Outlined.Share, contentDescription = "Share") }

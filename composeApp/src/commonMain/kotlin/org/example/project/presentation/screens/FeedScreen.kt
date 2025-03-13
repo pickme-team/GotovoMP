@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.paging.LoadState
 import app.cash.paging.compose.collectAsLazyPagingItems
 import coil3.compose.AsyncImage
 import org.example.project.Const
@@ -63,7 +64,10 @@ fun SharedTransitionScope.FeedScreen(
     val recipes = feedScreenVM.pager.collectAsLazyPagingItems().also { println(it.itemCount) }
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
-        isRefreshing = uiState.isLoading,
+        isRefreshing = when (recipes.loadState.refresh) {
+            is LoadState.Error, is LoadState.NotLoading -> false
+            else -> true
+        },
         onRefresh = {
             recipes.refresh()
         },
@@ -97,7 +101,7 @@ fun SharedTransitionScope.FeedScreen(
                     recipe = recipe,
                     imageUrl = Const.placeholderImages.random(),
                     onClick = { navCtrl.navigate(Nav.VIEW.route + "/${recipe.id}") },
-                    modifier = Modifier.animateItem().sharedBounds(
+                    modifier = Modifier.fillParentMaxWidth().animateItem().sharedBounds(
                         rememberSharedContentState("view${recipe.id}",),
                         animatedVisibilityScope = animatedScope
                     )
