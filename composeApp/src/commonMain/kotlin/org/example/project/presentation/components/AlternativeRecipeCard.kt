@@ -25,12 +25,17 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -164,11 +169,121 @@ fun AlternativeRecipeCard(
 
             }
         }
-
-
-
-
-
     }
+}
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun AlternativeRecipeCard2(
+    recipe: RecipeDTO,
+    imageUrl: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var imageLoaded by rememberSaveable { mutableStateOf(false) }
+    val fadeColor =
+        MaterialTheme.colorScheme.run { if (!isSystemInDarkTheme()) onBackground else background }
+    val fadeInverse =
+        MaterialTheme.colorScheme.run { if (isSystemInDarkTheme()) onBackground else background }
+
+    Surface(modifier = modifier.fillMaxWidth(), onClick = onClick) {
+        Column(Modifier.fillMaxWidth()) {
+            HorizontalDivider()
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(Modifier.size(36.dp).clip(CircleShape).background(color = tertiaryDark))
+                Text(
+                    text = recipe.author.run { firstName?.plus(" ")?.plus(lastName) ?: username },
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.BottomStart) {
+                var lineCount by remember { mutableStateOf(1) }
+                AsyncImage(
+                    modifier = Modifier.fillMaxWidth().aspectRatio(1f).drawWithContent {
+                        drawContent()
+                        drawRect(
+                            brush = Brush.verticalGradient(
+                                0f to Color.Transparent,
+                                0.65f - .15f*lineCount to Color.Transparent,
+                                1f - .15f*lineCount  to fadeColor.copy(0.85f)
+                            )
+                        )
+                    },
+                    model = imageUrl,
+                    contentDescription = recipe.name,
+                    contentScale = ContentScale.Crop,
+                    onSuccess = { imageLoaded = true })
+                Text(
+                    modifier = Modifier.padding(16.dp),
+                    text = recipe.name,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 3,
+                    style = MaterialTheme.typography.displayMedium.copy(
+                        lineBreak = LineBreak.Paragraph,
+                        color = fadeInverse,
+                        fontWeight = FontWeight.Black
+                    ),
+                    onTextLayout = {
+                        lineCount = it.lineCount
+                    },
+                )
+            }
+            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh).fillMaxWidth().padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "Ингредиенты:",
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                )
+                var expandIngredients by remember { mutableStateOf(false) }
+                AnimatedContent(expandIngredients) { expanded ->
+                    if (expanded) {
+                        recipe.ingredients.run {
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(horizontal = 12.dp).clip(MaterialTheme.shapes.large).clickable { expandIngredients = !expandIngredients }) {
+                                forEach {
+                                    OutlinedCard(shape = MaterialTheme.shapes.large, colors = CardDefaults.outlinedCardColors(containerColor = fadeInverse, contentColor = fadeColor)) {
+                                        Text(it.name, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), fontStyle = FontStyle.Italic)
+                                    }
+                                }
+                            }
+                        }
+
+                    } else {
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            item {
+                                Spacer(Modifier.width(4.dp))
+                            }
+                            items(recipe.ingredients.take(5)) {
+                                OutlinedCard(shape = MaterialTheme.shapes.large, colors = CardDefaults.outlinedCardColors(containerColor = fadeInverse, contentColor = fadeColor)) {
+                                    Text(it.name, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), fontStyle = FontStyle.Italic)
+                                }
+                            }
+                            if (recipe.ingredients.size > 5) {
+                                item {
+                                    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                                        OutlinedCard(onClick = { expandIngredients = true }, shape = MaterialTheme.shapes.large, colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = fadeColor)) {
+                                            Text("ещё ${recipe.ingredients.size - 5}", modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), fontStyle = FontStyle.Italic)
+                                        }
+                                    }
+                                }
+                            }
+                            item {
+                                Spacer(Modifier.width(4.dp))
+                            }
+                        }
+                    }
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("час назад", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = 16.dp))
+                Spacer(Modifier.weight(1f))
+                IconButton({}) { Icon(Icons.Outlined.ThumbUp, contentDescription = "Like") }
+                IconButton({}) { Icon(Icons.Outlined.Add, contentDescription = "Comment") }
+                IconButton({}) { Icon(Icons.Outlined.Share, contentDescription = "Share") }
+            }
+        }
+    }
 }

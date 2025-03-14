@@ -49,6 +49,7 @@ import org.example.project.Const
 import org.example.project.data.network.model.RecipeDTO
 import org.example.project.domain.DomainError
 import org.example.project.presentation.components.AlternativeRecipeCard
+import org.example.project.presentation.components.AlternativeRecipeCard2
 import org.example.project.presentation.util.Nav
 import org.example.project.presentation.util.bouncyClickable
 import org.example.project.viewModels.FeedScreenVM
@@ -72,15 +73,12 @@ fun SharedTransitionScope.FeedScreen(
             recipes.refresh()
         },
     ) {
-        LazyColumn(
-            contentPadding = PaddingValues(24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+        LazyColumn {
             item {
                 Text(
                     "Рекомендации",
                     style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().padding(24.dp)
                 )
             }
             item {
@@ -97,7 +95,7 @@ fun SharedTransitionScope.FeedScreen(
             }
             items(recipes.itemCount) { index ->
                 val recipe = recipes[index] ?: return@items
-                AlternativeRecipeCard(
+                AlternativeRecipeCard2(
                     recipe = recipe,
                     imageUrl = Const.placeholderImages.random(),
                     onClick = { navCtrl.navigate(Nav.VIEW.route + "/${recipe.id}") },
