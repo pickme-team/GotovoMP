@@ -52,6 +52,10 @@ fun TextLine(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     modifier: Modifier = Modifier
 ) {
+    val style = MaterialTheme.typography.titleLarge.copy(
+        MaterialTheme.colorScheme.onBackground
+    )
+
   var isFocused by remember { mutableStateOf(false) }
   val surfaceBright = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f)
   val primary = MaterialTheme.colorScheme.primary
@@ -72,9 +76,7 @@ fun TextLine(
             modifier.height(48.dp).onFocusChanged {
                 isFocused = it.isFocused
             },
-            textStyle =
-            MaterialTheme.typography.headlineSmall.copy(
-                color = MaterialTheme.colorScheme.onBackground),
+            textStyle = style,
             value = value,
             onValueChange = { it: TextFieldValue -> onValueChange(it) },
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
@@ -97,10 +99,7 @@ fun TextLine(
                     Row {
                         if (prefix != null) {
                             Text(prefix,
-                                style =
-                                MaterialTheme.typography.headlineSmall.copy(
-                                    MaterialTheme.colorScheme.onBackground
-                                ))
+                                style = style)
                         }
                         Box {
                             innerTextField()
@@ -108,10 +107,7 @@ fun TextLine(
                                 Text(
                                     placeholderText,
                                     color = MaterialTheme.colorScheme.onBackground.copy(0.3f),
-                                    style =
-                                    MaterialTheme.typography.headlineSmall.copy(
-                                        MaterialTheme.colorScheme.onBackground
-                                    )
+                                    style = style
                                 )
                             }
                         }

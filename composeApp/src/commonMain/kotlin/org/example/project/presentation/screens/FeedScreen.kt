@@ -16,12 +16,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -42,16 +40,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.paging.PagingData
+import androidx.paging.LoadState
 import app.cash.paging.compose.collectAsLazyPagingItems
 import coil3.compose.AsyncImage
 import org.example.project.Const
-import org.example.project.data.network.model.Ingredient
 import org.example.project.data.network.model.RecipeDTO
 import org.example.project.domain.DomainError
+import org.example.project.presentation.components.AlternativeRecipeCard
+import org.example.project.presentation.components.AlternativeRecipeCard2
 import org.example.project.presentation.util.Nav
 import org.example.project.presentation.util.bouncyClickable
 import org.example.project.viewModels.FeedScreenVM
@@ -67,20 +65,20 @@ fun SharedTransitionScope.FeedScreen(
     val recipes = feedScreenVM.pager.collectAsLazyPagingItems().also { println(it.itemCount) }
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
-        isRefreshing = uiState.isLoading,
+        isRefreshing = when (recipes.loadState.refresh) {
+            is LoadState.Error, is LoadState.NotLoading -> false
+            else -> true
+        },
         onRefresh = {
             recipes.refresh()
         },
     ) {
-        LazyColumn(
-            contentPadding = PaddingValues(24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+        LazyColumn {
             item {
                 Text(
                     "Рекомендации",
                     style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().padding(24.dp)
                 )
             }
             item {
@@ -97,11 +95,11 @@ fun SharedTransitionScope.FeedScreen(
             }
             items(recipes.itemCount) { index ->
                 val recipe = recipes[index] ?: return@items
-                RecipeCard(
+                AlternativeRecipeCard2(
                     recipe = recipe,
                     imageUrl = Const.placeholderImages.random(),
                     onClick = { navCtrl.navigate(Nav.VIEW.route + "/${recipe.id}") },
-                    modifier = Modifier.animateItem().sharedBounds(
+                    modifier = Modifier.fillParentMaxWidth().animateItem().sharedBounds(
                         rememberSharedContentState("view${recipe.id}",),
                         animatedVisibilityScope = animatedScope
                     )
@@ -111,7 +109,7 @@ fun SharedTransitionScope.FeedScreen(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RecipeCard(recipe: RecipeDTO, imageUrl: String, onClick: () -> Unit, modifier: Modifier = Modifier) =
     Card(modifier = modifier.fillMaxWidth().aspectRatio(0.8f).bouncyClickable(onClick = onClick, shrinkSize = 0.975f)) {
