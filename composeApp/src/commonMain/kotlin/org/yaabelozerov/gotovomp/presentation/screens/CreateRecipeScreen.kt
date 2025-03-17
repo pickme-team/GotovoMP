@@ -67,7 +67,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -237,11 +239,12 @@ fun CreateRecipeScreen(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifier = Modifier) {
     val uiState by viewModel.state.collectAsState()
     var showAddUi by remember { mutableStateOf(false) }
+    BackHandler(onBack = onBack)
     LazyColumn(
         modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
         verticalArrangement = Arrangement.spacedBy(8.dp)
