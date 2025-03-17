@@ -11,12 +11,11 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import org.koin.compose.viewmodel.dsl.viewModelOf
 import org.koin.core.module.dsl.viewModel
-import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import org.yaabelozerov.gotovomp.data.local.settings.SettingsManager
 import org.yaabelozerov.gotovomp.data.network.ApiClient
+import org.yaabelozerov.gotovomp.domain.usecase.FeedUseCase
 import org.yaabelozerov.gotovomp.viewModels.AuthVM
 import org.yaabelozerov.gotovomp.viewModels.FeedScreenVM
 import org.yaabelozerov.gotovomp.viewModels.PersonalVM
@@ -59,5 +58,8 @@ object KoinModule {
         viewModel { PersonalVM(get()) }
         viewModel { ProfileVM(get()) }
         viewModel { ViewRecipeVM(get()) }
+    }
+    val domain = module {
+        single { FeedUseCase(get()) }
     }
 }

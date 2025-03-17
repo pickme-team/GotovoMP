@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         startKoin {
-            modules(KoinModule.network, KoinModule.viewModels)
+            modules(KoinModule.network, KoinModule.viewModels, KoinModule.domain)
         }
 
         setContent {
