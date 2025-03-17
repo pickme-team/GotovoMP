@@ -1,5 +1,6 @@
 package org.yaabelozerov.gotovomp.viewModels
 
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -16,32 +17,14 @@ import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
 import org.yaabelozerov.gotovomp.domain.DomainError
 import org.yaabelozerov.gotovomp.domain.GlobalEvent
 import org.yaabelozerov.gotovomp.domain.UI
-import org.yaabelozerov.gotovomp.domain.otherwise
-import org.yaabelozerov.gotovomp.domain.unwrap
+import org.yaabelozerov.gotovomp.domain.onError
+import org.yaabelozerov.gotovomp.domain.onSuccess
 import org.yaabelozerov.gotovomp.nullIfBlank
 
-data class CreatedByMeState(
-    val recipes: List<RecipeDTO> = emptyList(),
-    val error: DomainError? = null,
-)
-
-data class PersonalState(
-    val recipes: CreatedByMeState = CreatedByMeState(),
-    val isLoading: Boolean = false
-)
-
-data class IngredientState(
-    val current: List<IngredientCreateRequest> = emptyList(),
-    val found: List<IngredientCreateRequest> = emptyList(),
-    val query: String = "",
-)
 
 class PersonalVM(private val api: ApiClient): ViewModel() {
-    private val _state = MutableStateFlow(PersonalState())
+    private val _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
-
-    private val _ingredientState = MutableStateFlow(IngredientState())
-    val ingredientState = _ingredientState.asStateFlow()
 
     init {
         subscribeToGlobalEvents()
@@ -52,8 +35,7 @@ class PersonalVM(private val api: ApiClient): ViewModel() {
             UI.GlobalEventFlow.collect {
                 when (it) {
                     GlobalEvent.Logout -> {
-                        _state.update { PersonalState() }
-                        _ingredientState.update { IngredientState() }
+                        _state.update { State() }
                     }
                     GlobalEvent.Login -> fetchRecipes()
                 }
@@ -83,10 +65,10 @@ class PersonalVM(private val api: ApiClient): ViewModel() {
     private suspend fun loadRecipes(callback: suspend () -> Unit = {}) {
         SettingsManager.token.nullIfBlank()?.let {
             _state.update { it.copy(isLoading = true) }
-            api.getOwnedRecipes() unwrap { res ->
-                _state.update { it.copy(recipes = it.recipes.copy(recipes = res)) }
-            } otherwise { err ->
-                _state.update { it.copy(recipes = it.recipes.copy(error = err)) }
+            api.getOwnedRecipes().onSuccess { res ->
+                _state.update { it.copy(recipes = res) }
+            }.onError { err ->
+                _state.update { it.copy(error = err) }
             }
             _state.update { it.copy(isLoading = false) }
             callback()
@@ -100,30 +82,41 @@ class PersonalVM(private val api: ApiClient): ViewModel() {
     }
 
     fun updateIngredientQuery(query: String) {
-        _ingredientState.update { it.copy(query = query) }
+        _state.update { it.copy(ingredientQuery = query) }
         if (query.length <= 2) return
         viewModelScope.launch(Dispatchers.IO) {
             // SEARCH STUB
             val found = emptyList<IngredientCreateRequest>()
-            _ingredientState.update { it.copy(found = found) }
+            _state.update { it.copy(foundIngredients = found) }
         }
     }
 
     fun addIngredient(request: IngredientCreateRequest) {
-        _ingredientState.update {
-            it.copy(current = it.current + request)
+        _state.update {
+            it.copy(currentIngredients = it.currentIngredients + request)
         }
     }
 
     fun removeIngredientAt(index: Int) {
-        _ingredientState.update {
-            it.copy(current = it.current.filterIndexed { idx, _ -> idx != index })
+        _state.update {
+            it.copy(currentIngredients = it.currentIngredients.filterIndexed { idx, _ -> idx != index })
         }
     }
 
     fun cleanIngredients() {
-        _ingredientState.update {
-            it.copy(current = emptyList())
+        _state.update {
+            it.copy(currentIngredients = emptyList())
         }
+    }
+
+    companion object {
+        data class State(
+            val recipes: List<RecipeDTO> = emptyList(),
+            val error: DomainError? = null,
+            val isLoading: Boolean = false,
+            val currentIngredients: List<IngredientCreateRequest> = emptyList(),
+            val foundIngredients: List<IngredientCreateRequest> = emptyList(),
+            val ingredientQuery: String = "",
+        )
     }
 }

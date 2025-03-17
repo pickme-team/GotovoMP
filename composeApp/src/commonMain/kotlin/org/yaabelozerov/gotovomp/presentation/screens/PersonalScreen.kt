@@ -70,7 +70,7 @@ fun SharedTransitionScope.PersonalScreen(navCtrl: NavHostController, modifier: M
     ) {
         LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp)) {
             item {
-                Section(title = "Созданные мной", items = uiState.recipes.recipes, animatedScope = animatedScope, icon = Icons.Default.Favorite, onClick = {
+                Section(title = "Созданные мной", items = uiState.recipes, animatedScope = animatedScope, icon = Icons.Default.Favorite, onClick = {
                    navCtrl.navigate("${Nav.VIEW.route}/$it")
                 }, actionButton = {
                     SmallFloatingActionButton(onClick = { navCtrl.navigate(Nav.CREATE.route) }, elevation = FloatingActionButtonDefaults.elevation(

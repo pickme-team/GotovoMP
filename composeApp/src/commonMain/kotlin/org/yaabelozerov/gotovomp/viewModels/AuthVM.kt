@@ -10,22 +10,17 @@ import org.yaabelozerov.gotovomp.data.local.settings.SettingsManager
 import org.yaabelozerov.gotovomp.data.network.model.SignInWithPhoneNumberRequest
 import org.yaabelozerov.gotovomp.data.network.model.SignUpRequest
 import org.yaabelozerov.gotovomp.domain.DomainError
-import org.yaabelozerov.gotovomp.domain.otherwise
-import org.yaabelozerov.gotovomp.domain.unwrap
 import org.yaabelozerov.gotovomp.data.network.ApiClient
 import org.yaabelozerov.gotovomp.domain.GlobalEvent
 import org.yaabelozerov.gotovomp.domain.UI
+import org.yaabelozerov.gotovomp.domain.onError
+import org.yaabelozerov.gotovomp.domain.onSuccess
 import org.yaabelozerov.gotovomp.nullIfBlank
 
-data class AuthVMState(
-    val checkedForLogin: Boolean = false,
-    val error: DomainError? = null
-)
-
 class AuthVM(
-    private val client: ApiClient
-): ViewModel() {
-    private val _state = MutableStateFlow(AuthVMState())
+    private val client: ApiClient,
+) : ViewModel() {
+    private val _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
 
     init {
@@ -40,7 +35,13 @@ class AuthVM(
         }
     }
 
-    fun tryRegister(firstName: String, lastName: String, username: String, phoneNumber: String, password: String) {
+    fun tryRegister(
+        firstName: String,
+        lastName: String,
+        username: String,
+        phoneNumber: String,
+        password: String,
+    ) {
         viewModelScope.launch {
             val request = SignUpRequest(
                 firstName = firstName,
@@ -49,9 +50,9 @@ class AuthVM(
                 phoneNumber = phoneNumber,
                 password = password
             )
-            client.singUp(request) unwrap {
+            client.singUp(request).onSuccess {
                 tryLogin(request.phoneNumber, request.password)
-            } otherwise { err ->
+            }.onError { err ->
                 _state.update { it.copy(error = err) }
             }
         }
@@ -60,16 +61,23 @@ class AuthVM(
     fun tryLogin(phoneNumber: String, password: String) {
         val scope = viewModelScope
         viewModelScope.launch {
-            client.singIn(SignInWithPhoneNumberRequest(phoneNumber, password)) unwrap { res ->
+            client.singIn(SignInWithPhoneNumberRequest(phoneNumber, password)).onSuccess { res ->
                 SettingsManager.token = res.token
                 scope.launch {
                     UI.GlobalEventFlow.emit(GlobalEvent.Login)
                 }
-            } otherwise { err ->
+            }.onError { err ->
                 _state.update { it.copy(error = err) }
             }
         }
     }
 
     fun resetError() = _state.update { it.copy(error = null) }
+
+    companion object {
+        data class State(
+            val checkedForLogin: Boolean = false,
+            val error: DomainError? = null,
+        )
+    }
 }

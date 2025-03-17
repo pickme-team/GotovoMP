@@ -17,28 +17,18 @@ sealed interface DomainError {
     data object Unknown : DomainError
 }
 
-sealed interface DomainResult<out T> {
-    data class Success<out T>(val value: T) : DomainResult<T>
-    data class Error(val error: DomainError) : DomainResult<Nothing>
+fun <T> Result<T>.onError(block: (DomainError) -> Unit): Result<T> {
+    if (isFailure) {
+        block(exceptionOrNull()?.toError() ?: DomainError.Unknown)
+    }
+    return this
 }
 
-suspend fun <T> wrap(logThrowable: Boolean = true, block: suspend () -> T): DomainResult<T> = try {
-    DomainResult.Success(block())
-} catch (t: Throwable) {
-    if (logThrowable) t.printStackTrace()
-    DomainResult.Error(t.toError())
-}
-
-data class UnwrapChainMiddle<T>(
-    val result: DomainResult<T>,
-    val onSuccess: (T) -> Unit,
-)
-
-infix fun <T> DomainResult<T>.unwrap(block: (T) -> Unit) = UnwrapChainMiddle(this, block)
-
-infix fun <T> UnwrapChainMiddle<T>.otherwise(block: (DomainError) -> Unit) = when (this.result) {
-    is DomainResult.Success -> this.onSuccess(this.result.value)
-    is DomainResult.Error -> block(this.result.error)
+fun <T> Result<T>.onSuccess(block: (T) -> Unit): Result<T> {
+    getOrNull()?.let {
+        block(it)
+    }
+    return this
 }
 
 private fun Throwable?.toError(): DomainError = when (this) {

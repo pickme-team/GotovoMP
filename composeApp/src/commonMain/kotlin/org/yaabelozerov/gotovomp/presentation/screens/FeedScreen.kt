@@ -34,7 +34,6 @@ fun SharedTransitionScope.FeedScreen(
     feedScreenVM: FeedScreenVM = koinViewModel(),
     animatedScope: AnimatedContentScope,
 ) {
-    val uiState by feedScreenVM.state.collectAsState()
     val recipes = feedScreenVM.recipes.collectAsLazyPagingItems()
     LaunchedEffect(Unit) {
         recipes.refresh()
@@ -56,18 +55,6 @@ fun SharedTransitionScope.FeedScreen(
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.fillMaxWidth().padding(24.dp)
                 )
-            }
-            item {
-                uiState.error?.let {
-                    Text(
-                        when (it) {
-                            is DomainError.NetworkClientError -> "Client Error"
-                            is DomainError.NetworkServerError -> "Server Error"
-                            DomainError.Unknown -> "Unknown Error"
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
             }
             items(recipes.itemCount) { index ->
                 val recipe = recipes[index] ?: return@items

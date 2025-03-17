@@ -100,7 +100,7 @@ fun CreateRecipeScreen(
             )
         )
     }
-    val ingredientState by viewModel.ingredientState.collectAsState()
+    val uiState by viewModel.state.collectAsState()
     val steps by remember {
         mutableStateOf(
             SnapshotStateList<Pair<String, RichTextState>>()
@@ -154,7 +154,7 @@ fun CreateRecipeScreen(
                     )
                     Badge(backgroundColor = MaterialTheme.colorScheme.primary) {
                         Text(
-                            ingredientState.current.size.toString(),
+                            uiState.currentIngredients.size.toString(),
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
@@ -217,7 +217,7 @@ fun CreateRecipeScreen(
                                 .reduceOrNull { a, b -> "$a%#*8$b" }
                         viewModel.addRecipe(
                             current.copy(
-                                text = merged ?: "", ingredients = ingredientState.current
+                                text = merged ?: "", ingredients = uiState.currentIngredients
                             ), onCreated
                         )
                         viewModel.cleanIngredients()
@@ -240,7 +240,7 @@ fun CreateRecipeScreen(
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifier = Modifier) {
-    val uiState by viewModel.ingredientState.collectAsState()
+    val uiState by viewModel.state.collectAsState()
     var showAddUi by remember { mutableStateOf(false) }
     LazyColumn(
         modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
@@ -248,7 +248,7 @@ fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifi
     ) {
         item {
             SearchBar(
-                query = uiState.query to viewModel::updateIngredientQuery,
+                query = uiState.ingredientQuery to viewModel::updateIngredientQuery,
                 showAddUi = showAddUi,
                 onShowAddUi = { showAddUi = !showAddUi },
                 onBack = onBack,
@@ -269,7 +269,7 @@ fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifi
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    uiState.current.forEachIndexed { index, it ->
+                    uiState.currentIngredients.forEachIndexed { index, it ->
                         Chip(
                             onClick = { viewModel.removeIngredientAt(index) },
                             colors = ChipDefaults.chipColors(
@@ -293,7 +293,7 @@ fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifi
                 }
             }
         }
-        items(uiState.found, key = { it }) {
+        items(uiState.foundIngredients, key = { it }) {
             Card(onClick = {}) {
                 Text(it.name)
             }

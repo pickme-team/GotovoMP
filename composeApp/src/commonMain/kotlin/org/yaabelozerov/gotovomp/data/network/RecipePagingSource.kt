@@ -5,8 +5,8 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import app.cash.paging.PagingConfig
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
-import org.yaabelozerov.gotovomp.domain.otherwise
-import org.yaabelozerov.gotovomp.domain.unwrap
+import org.yaabelozerov.gotovomp.domain.onError
+import org.yaabelozerov.gotovomp.domain.onSuccess
 
 class RecipePagingSource(
     private val client: ApiClient
@@ -18,13 +18,13 @@ class RecipePagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RecipeDTO> {
         val nextPage = params.key ?: 1
         var res: LoadResult<Int, RecipeDTO>? = null
-        client.getRecipeFeed(limit = PAGE_SIZE, offset = nextPage - 1).unwrap { resp ->
+        client.getRecipeFeed(limit = PAGE_SIZE, offset = nextPage - 1).onSuccess { resp ->
             res = LoadResult.Page(
                 data = resp,
                 prevKey = null,
                 nextKey = (nextPage - 1 + PAGE_SIZE).takeIf { resp.isNotEmpty() }
             )
-        } otherwise {
+        }.onError {
             res = LoadResult.Error(Throwable(it.toString()))
         }
         return res!!
