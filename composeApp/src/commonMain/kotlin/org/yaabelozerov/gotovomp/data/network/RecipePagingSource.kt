@@ -7,7 +7,7 @@ import org.yaabelozerov.gotovomp.domain.otherwise
 import org.yaabelozerov.gotovomp.domain.unwrap
 
 class RecipePagingSource(
-    private val client: ApiClient = ApiClient(Net.client)
+    private val client: ApiClient
 ): PagingSource<Int, RecipeDTO>() {
     override fun getRefreshKey(state: PagingState<Int, RecipeDTO>): Int? {
         return state.anchorPosition

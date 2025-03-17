@@ -13,7 +13,6 @@ import org.yaabelozerov.gotovomp.domain.DomainError
 import org.yaabelozerov.gotovomp.domain.otherwise
 import org.yaabelozerov.gotovomp.domain.unwrap
 import org.yaabelozerov.gotovomp.data.network.ApiClient
-import org.yaabelozerov.gotovomp.data.network.Net
 import org.yaabelozerov.gotovomp.domain.GlobalEvent
 import org.yaabelozerov.gotovomp.domain.UI
 import org.yaabelozerov.gotovomp.nullIfBlank
@@ -24,7 +23,7 @@ data class AuthVMState(
 )
 
 class AuthVM(
-    val client: ApiClient = ApiClient(Net.client)
+    private val client: ApiClient
 ): ViewModel() {
     private val _state = MutableStateFlow(AuthVMState())
     val state = _state.asStateFlow()

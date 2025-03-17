@@ -9,11 +9,11 @@ import org.yaabelozerov.gotovomp.data.network.RecipePagingSource
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
 
 class FeedUseCase(
-    api: ApiClient
+    private val api: ApiClient
 ) {
     fun getFeedFlow(): Flow<PagingData<RecipeDTO>> {
         val pager = Pager(PagingConfig(pageSize = 1)) {
-            RecipePagingSource()
+            RecipePagingSource(api)
         }.flow
         return pager
     }

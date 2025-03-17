@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.yaabelozerov.gotovomp.data.network.ApiClient
-import org.yaabelozerov.gotovomp.data.network.Net
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
 import org.yaabelozerov.gotovomp.data.network.model.UserDTO
 import org.yaabelozerov.gotovomp.domain.DomainError
@@ -26,7 +25,7 @@ data class RecipeVMState(
 )
 
 class ViewRecipeVM(
-    private val client: ApiClient = ApiClient(Net.client)
+    private val client: ApiClient
 ): ViewModel() {
     private val _state = MutableStateFlow(RecipeVMState())
     val state = _state.asStateFlow()

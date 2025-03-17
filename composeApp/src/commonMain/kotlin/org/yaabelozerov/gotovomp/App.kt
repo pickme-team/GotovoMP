@@ -22,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.koin.compose.KoinApplication
+import org.koin.compose.viewmodel.koinViewModel
 import org.yaabelozerov.gotovomp.domain.GlobalEvent
 import org.yaabelozerov.gotovomp.domain.UI
 import org.yaabelozerov.gotovomp.presentation.screens.AuthScreen
@@ -89,7 +90,7 @@ fun App() {
                     }
                 }
             }) { innerPadding ->
-                val personalVM: PersonalVM = viewModel()
+                val personalVM: PersonalVM = koinViewModel()
                 SharedTransitionLayout {
                     NavHost(
                         modifier = Modifier.padding(innerPadding),

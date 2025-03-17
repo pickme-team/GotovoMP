@@ -22,10 +22,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
+import org.koin.compose.viewmodel.koinViewModel
 import org.yaabelozerov.gotovomp.viewModels.ProfileVM
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier, profileVM: ProfileVM = viewModel()) {
+fun ProfileScreen(modifier: Modifier = Modifier, profileVM: ProfileVM = koinViewModel()) {
     Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         val uiState by profileVM.state.collectAsState()
         uiState.run {

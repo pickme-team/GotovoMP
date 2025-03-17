@@ -40,6 +40,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.util.fastAll
+import org.koin.compose.viewmodel.koinViewModel
 import org.yaabelozerov.gotovomp.presentation.util.ValidationState
 import org.yaabelozerov.gotovomp.presentation.util.validation
 import org.yaabelozerov.gotovomp.presentation.util.isError
@@ -47,7 +48,7 @@ import org.yaabelozerov.gotovomp.presentation.util.isValid
 
 
 @Composable
-fun AuthScreen(authVM: AuthVM = viewModel()) {
+fun AuthScreen(authVM: AuthVM = koinViewModel()) {
     LaunchedEffect(Unit) {
         authVM.checkSavedLogin()
     }
@@ -115,7 +116,7 @@ private fun AuthColumn(
 private fun LoginWithPhone(
     error: DomainError?,
     toRegister: () -> Unit,
-    authVM: AuthVM = viewModel(),
+    authVM: AuthVM = koinViewModel(),
 ) {
     var phoneNumber by remember { mutableStateOf(TextFieldValue()) }
     var password by remember { mutableStateOf(TextFieldValue()) }
@@ -191,7 +192,7 @@ private fun LoginWithPhone(
 private fun Register(
     error: DomainError?,
     toLogin: () -> Unit,
-    authVM: AuthVM = viewModel(),
+    authVM: AuthVM = koinViewModel(),
 ) {
     var firstName by remember { mutableStateOf(TextFieldValue()) }
     var lastName by remember { mutableStateOf(TextFieldValue()) }

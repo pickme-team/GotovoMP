@@ -44,6 +44,7 @@ import androidx.navigation.NavHostController
 import androidx.paging.LoadState
 import app.cash.paging.compose.collectAsLazyPagingItems
 import coil3.compose.AsyncImage
+import org.koin.compose.viewmodel.koinViewModel
 import org.yaabelozerov.gotovomp.Const
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
 import org.yaabelozerov.gotovomp.domain.DomainError
@@ -56,7 +57,7 @@ import org.yaabelozerov.gotovomp.viewModels.FeedScreenVM
 @Composable
 fun SharedTransitionScope.FeedScreen(
     navCtrl: NavHostController,
-    feedScreenVM: FeedScreenVM = viewModel(),
+    feedScreenVM: FeedScreenVM = koinViewModel(),
     animatedScope: AnimatedContentScope,
 ) {
     val uiState by feedScreenVM.state.collectAsState()

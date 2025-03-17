@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.yaabelozerov.gotovomp.data.local.settings.SettingsManager
 import org.yaabelozerov.gotovomp.data.network.ApiClient
-import org.yaabelozerov.gotovomp.data.network.Net
 import org.yaabelozerov.gotovomp.data.network.model.UserDTO
 import org.yaabelozerov.gotovomp.domain.DomainError
 import org.yaabelozerov.gotovomp.domain.GlobalEvent
@@ -35,7 +34,7 @@ sealed interface ProfileScreenEvent {
 }
 
 class ProfileVM(
-    private val api: ApiClient = ApiClient(Net.client),
+    private val api: ApiClient
 ) : ViewModel() {
     private val _state = MutableStateFlow(ProfileVMState())
     val state = _state.asStateFlow()

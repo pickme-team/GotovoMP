@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.yaabelozerov.gotovomp.data.local.settings.SettingsManager
 import org.yaabelozerov.gotovomp.data.network.ApiClient
-import org.yaabelozerov.gotovomp.data.network.Net
 import org.yaabelozerov.gotovomp.data.network.model.IngredientCreateRequest
 import org.yaabelozerov.gotovomp.data.network.model.RecipeCreateRequest
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
@@ -37,7 +36,7 @@ data class IngredientState(
     val query: String = "",
 )
 
-class PersonalVM(private val api: ApiClient = ApiClient(Net.client)): ViewModel() {
+class PersonalVM(private val api: ApiClient): ViewModel() {
     private val _state = MutableStateFlow(PersonalState())
     val state = _state.asStateFlow()
 

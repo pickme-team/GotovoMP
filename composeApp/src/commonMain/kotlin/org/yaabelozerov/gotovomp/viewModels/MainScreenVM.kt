@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.yaabelozerov.gotovomp.domain.DomainError
 import org.yaabelozerov.gotovomp.data.network.ApiClient
-import org.yaabelozerov.gotovomp.data.network.Net
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
 import org.yaabelozerov.gotovomp.domain.GlobalEvent
 import org.yaabelozerov.gotovomp.domain.UI
@@ -21,7 +20,7 @@ data class MainScreenVMState(
 )
 
 class FeedScreenVM(
-    private val client: ApiClient = ApiClient(Net.client),
+    private val client: ApiClient,
     private val useCase: FeedUseCase = FeedUseCase(client)
 ) : ViewModel() {
     private val _state = MutableStateFlow(MainScreenVMState())

@@ -37,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
+import org.koin.compose.viewmodel.koinViewModel
 import org.yaabelozerov.gotovomp.Const
 import org.yaabelozerov.gotovomp.viewModels.ViewRecipeVM
 
@@ -46,7 +47,7 @@ fun ViewRecipeScreen(
     recipeId: Long,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ViewRecipeVM = viewModel(),
+    viewModel: ViewRecipeVM = koinViewModel(),
 ) {
     val uiState by viewModel.state.collectAsState()
     LaunchedEffect(recipeId) {
