@@ -61,13 +61,15 @@ kotlin {
             implementation(libs.multiplatform.settings.coroutines)
             implementation(libs.multiplatform.settings.no.arg)
 
+            implementation(project.dependencies.platform(libs.koin.bom))
+            implementation(libs.bundles.koin)
+
             implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc10")
 
             implementation("app.cash.paging:paging-compose-common:3.3.0-alpha02-0.4.0")
             implementation("app.cash.paging:paging-common:3.3.0-alpha02-0.4.0")
 
-            implementation("androidx.compose.material:material-icons-extended:1.7.8")
-
+            implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
         }
 
         nativeMain.dependencies {
@@ -77,11 +79,11 @@ kotlin {
 }
 
 android {
-    namespace = "org.example.project"
+    namespace = "org.yaabelozerov.gotovomp"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "org.example.project"
+        applicationId = "org.yaabelozerov.gotovomp"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -105,7 +107,6 @@ android {
 
 dependencies {
     implementation(libs.androidx.material3.android)
-    implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.navigation.compose)
     debugImplementation(compose.uiTooling)
 }
