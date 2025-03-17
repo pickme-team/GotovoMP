@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,7 +47,6 @@ import coil3.compose.AsyncImage
 import org.example.project.Const
 import org.example.project.data.network.model.RecipeDTO
 import org.example.project.domain.DomainError
-import org.example.project.presentation.components.AlternativeRecipeCard
 import org.example.project.presentation.components.AlternativeRecipeCard2
 import org.example.project.presentation.util.Nav
 import org.example.project.presentation.util.bouncyClickable
@@ -62,7 +60,7 @@ fun SharedTransitionScope.FeedScreen(
     animatedScope: AnimatedContentScope,
 ) {
     val uiState by feedScreenVM.state.collectAsState()
-    val recipes = feedScreenVM.pager.collectAsLazyPagingItems().also { println(it.itemCount) }
+    val recipes = feedScreenVM.recipes.collectAsLazyPagingItems().also { println(it.itemCount) }
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
         isRefreshing = when (recipes.loadState.refresh) {
