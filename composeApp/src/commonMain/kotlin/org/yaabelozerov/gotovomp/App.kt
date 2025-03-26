@@ -38,7 +38,7 @@ import org.yaabelozerov.gotovomp.presentation.util.appLightScheme
 import org.yaabelozerov.gotovomp.presentation.util.makeTypography
 import org.yaabelozerov.gotovomp.viewModels.PersonalVM
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun App() {
     val navCtrl = rememberNavController()

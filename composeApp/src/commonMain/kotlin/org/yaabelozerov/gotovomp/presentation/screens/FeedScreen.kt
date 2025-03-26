@@ -31,6 +31,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.yaabelozerov.gotovomp.Const
 import org.yaabelozerov.gotovomp.domain.DomainError
 import org.yaabelozerov.gotovomp.presentation.components.RecipeCard
+import org.yaabelozerov.gotovomp.presentation.components.ScreenHeader
 import org.yaabelozerov.gotovomp.presentation.util.Nav
 import org.yaabelozerov.gotovomp.viewModels.FeedScreenVM
 
@@ -57,11 +58,7 @@ fun SharedTransitionScope.FeedScreen(
     ) {
         LazyColumn {
             item {
-                Text(
-                    "Рекомендации",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.fillMaxWidth().padding(24.dp)
-                )
+                ScreenHeader("Рекоммендации")
             }
             items(recipes.itemCount) { index ->
                 val recipe = recipes[index] ?: return@items

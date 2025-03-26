@@ -65,7 +65,6 @@ fun AuthScreen(authVM: AuthVM = koinViewModel()) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AuthColumn(
     topText: String,
@@ -93,10 +92,11 @@ private fun AuthColumn(
                 is DomainError.NetworkClientError -> Text("Client Error")
                 DomainError.Unknown -> Text("Unknown error")
             }
+
         }
         FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth(), ) {
             OutlinedButton(onClick = left.second, shape = MaterialTheme.shapes.medium) {
-                Text(left.first) // TODO res
+                Text(left.first)
             }
             Button(
                 shape = MaterialTheme.shapes.medium,
@@ -106,7 +106,7 @@ private fun AuthColumn(
                     .copy(containerColor = MaterialTheme.colorScheme.primary),
                 enabled = authAvailable
             ) {
-                Text(right.first) // TODO res
+                Text(right.first)
             }
         }
     }

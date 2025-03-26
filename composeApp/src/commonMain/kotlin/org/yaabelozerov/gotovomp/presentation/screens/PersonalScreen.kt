@@ -28,6 +28,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallFloatingActionButton
@@ -55,6 +56,7 @@ import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import org.yaabelozerov.gotovomp.Const
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
+import org.yaabelozerov.gotovomp.presentation.components.ScreenHeader
 import org.yaabelozerov.gotovomp.presentation.util.Nav
 import org.yaabelozerov.gotovomp.presentation.util.bouncyClickable
 import org.yaabelozerov.gotovomp.viewModels.PersonalVM
@@ -68,9 +70,14 @@ fun SharedTransitionScope.PersonalScreen(navCtrl: NavHostController, modifier: M
         isRefreshing = uiState.isLoading,
         onRefresh = viewModel::fetchRecipes,
     ) {
-        LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp)) {
+        LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 0.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
-                Section(title = "Созданные мной", items = uiState.recipes, animatedScope = animatedScope, icon = Icons.Default.Favorite, onClick = {
+                ScreenHeader("Коллекции")
+                HorizontalDivider()
+
+            }
+            item {
+                Section(title = "Созданные мной", items = uiState.recipes, animatedScope = animatedScope, icon = Icons.Filled.Add, onClick = {
                    navCtrl.navigate("${Nav.VIEW.route}/$it")
                 }, actionButton = {
                     SmallFloatingActionButton(onClick = { navCtrl.navigate(Nav.CREATE.route) }, elevation = FloatingActionButtonDefaults.elevation(
@@ -83,6 +90,29 @@ fun SharedTransitionScope.PersonalScreen(navCtrl: NavHostController, modifier: M
                     }
                 }, delete = { viewModel.deleteRecipe(it) } )
             }
+            item {
+                Section(
+                    title = "Избранные",
+                    items = emptyList(),
+                    animatedScope = animatedScope,
+                    icon = Icons.Default.Favorite,
+                    onClick = {
+                        navCtrl.navigate("${Nav.VIEW.route}/$it")
+                    },
+                    actionButton = {
+                        SmallFloatingActionButton(onClick = { navCtrl.navigate(Nav.CREATE.route) }, elevation = FloatingActionButtonDefaults.elevation(
+                            defaultElevation = 2.dp,
+                            pressedElevation = 0.dp,
+                            focusedElevation = 2.dp,
+                            hoveredElevation = 2.dp
+                        )) {
+                            Icon(Icons.Default.Add, contentDescription = "Add")
+                        }
+                    },
+                    delete = { viewModel.deleteRecipe(it) }
+                )
+            }
+
         }
     }
 }
@@ -90,7 +120,7 @@ fun SharedTransitionScope.PersonalScreen(navCtrl: NavHostController, modifier: M
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun SharedTransitionScope.Section(title: String, items: List<RecipeDTO>, onClick: (Long) -> Unit, modifier: Modifier = Modifier, icon: ImageVector? = null, animatedScope: AnimatedContentScope, actionButton: (@Composable () -> Unit)? = null, delete: (Long) -> Unit) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
