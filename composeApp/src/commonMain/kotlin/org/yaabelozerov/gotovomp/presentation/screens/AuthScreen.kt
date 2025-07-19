@@ -2,7 +2,6 @@ package org.yaabelozerov.gotovomp.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import org.yaabelozerov.gotovomp.domain.DomainError
 import org.yaabelozerov.gotovomp.presentation.components.PhoneVisualTransformation
 import org.yaabelozerov.gotovomp.presentation.components.TextLine
@@ -87,13 +85,15 @@ private fun AuthColumn(
         content()
         error?.let {
             when (it) {
-                DomainError.NetworkServerError.CONFLICT -> Text("User already exists")
-                is DomainError.NetworkServerError -> Text("Server Error")
-                is DomainError.NetworkClientError -> Text("Client Error")
-
-                DomainError.Unknown -> Text("Unknown error")
+                is DomainError.NetworkClientError.NoInternet -> "No internet connection."
+                is DomainError.NetworkClientError.Serialization -> "Error retrieving data."
+                is DomainError.NetworkServerError.ServerError -> "Server error. Please try again later."
+                is DomainError.NetworkServerError.Unauthorized -> "Wrong combination of login and password."
+                is DomainError.NetworkServerError.NotFound, is DomainError.NetworkServerError.Conflict -> { left.second(); null }
+                is DomainError.Unknown -> "Unknown error. Please try again later."
+            }?.let { errorMessage ->
+                Text(errorMessage, color = MaterialTheme.colorScheme.error)
             }
-
         }
         FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth(), ) {
             OutlinedButton(onClick = left.second, shape = MaterialTheme.shapes.medium) {

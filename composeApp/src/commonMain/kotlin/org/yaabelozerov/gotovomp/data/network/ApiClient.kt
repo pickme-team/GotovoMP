@@ -16,50 +16,52 @@ import org.yaabelozerov.gotovomp.data.network.model.SignInWithPhoneNumberRequest
 import org.yaabelozerov.gotovomp.data.network.model.SignInWithUsernameRequest
 import org.yaabelozerov.gotovomp.data.network.model.SignUpRequest
 import org.yaabelozerov.gotovomp.data.network.model.UserDTO
+import org.yaabelozerov.gotovomp.domain.DomainResult
+import org.yaabelozerov.gotovomp.domain.runAndCatch
 
 class ApiClient(
     private val httpClient: HttpClient
 ) {
-    suspend fun singUp(body: SignUpRequest): Result<HttpResponse> = runCatching {
+    suspend fun singUp(body: SignUpRequest): DomainResult<HttpResponse> = runAndCatch {
         httpClient.post {
             url("auth/signUp")
             setBody(body)
         }.body()
     }
 
-    suspend fun singIn(body: SignInWithUsernameRequest): Result<HttpResponse> = runCatching {
+    suspend fun singIn(body: SignInWithUsernameRequest): DomainResult<HttpResponse> = runAndCatch {
        httpClient.post {
            url("auth/signIn")
            setBody(body)
        }.body()
     }
 
-    suspend fun singIn(body: SignInWithPhoneNumberRequest): Result<SignInDTO> = runCatching {
+    suspend fun singIn(body: SignInWithPhoneNumberRequest): DomainResult<SignInDTO> = runAndCatch {
         httpClient.post {
             url("auth/signIn")
             setBody(body)
         }.body()
     }
 
-    suspend fun getUserData(): Result<UserDTO> = runCatching {
+    suspend fun getUserData(): DomainResult<UserDTO> = runAndCatch {
         httpClient.get {
             url("auth/get")
         }.body()
     }
 
-    suspend fun getOwnedRecipes(): Result<List<RecipeDTO>> = runCatching {
+    suspend fun getOwnedRecipes(): DomainResult<List<RecipeDTO>> = runAndCatch {
         httpClient.get {
             url("recipes/getUsersRecipes")
         }.body()
     }
 
-    suspend fun getRecipeById(id: Long): Result<RecipeDTO> = runCatching {
+    suspend fun getRecipeById(id: Long): DomainResult<RecipeDTO> = runAndCatch {
         httpClient.get {
             url("recipes/get/$id")
         }.body()
     }
 
-    suspend fun getRecipeFeed(limit: Int, offset: Int): Result<List<RecipeDTO>> = runCatching {
+    suspend fun getRecipeFeed(limit: Int, offset: Int): DomainResult<List<RecipeDTO>> = runAndCatch {
         httpClient.get {
             url("recipes/getUserRecipesFeed")
             parameter("limit", limit)
@@ -67,14 +69,14 @@ class ApiClient(
         }.body()
     }
 
-    suspend fun addRecipe(body: RecipeCreateRequest): Result<HttpResponse> = runCatching {
+    suspend fun addRecipe(body: RecipeCreateRequest): DomainResult<HttpResponse> = runAndCatch {
         httpClient.post {
             setBody(body)
             url("recipes/add")
         }.body()
     }
 
-    suspend fun deleteRecipe(id: Long): Result<HttpResponse> = runCatching {
+    suspend fun deleteRecipe(id: Long): DomainResult<HttpResponse> = runAndCatch {
         httpClient.delete {
             url("/recipes/delete/$id")
         }
