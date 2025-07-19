@@ -50,7 +50,7 @@ class AuthVM(
                 phoneNumber = phoneNumber,
                 password = password
             )
-            client.singUp(request).onSuccess {
+            client.signUp(request).onSuccess {
                 tryLogin(request.phoneNumber, request.password)
             }.onError { err ->
                 _state.update { it.copy(error = err) }
@@ -61,7 +61,7 @@ class AuthVM(
     fun tryLogin(phoneNumber: String, password: String) {
         val scope = viewModelScope
         viewModelScope.launch {
-            client.singIn(SignInWithPhoneNumberRequest(phoneNumber, password)).onSuccess { res ->
+            client.signIn(SignInWithPhoneNumberRequest(phoneNumber, password)).onSuccess { res ->
                 SettingsManager.token = res.token
                 scope.launch {
                     UI.GlobalEventFlow.emit(GlobalEvent.Login)

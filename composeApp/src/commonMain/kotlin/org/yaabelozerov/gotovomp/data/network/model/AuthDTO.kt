@@ -33,6 +33,6 @@ data class SignInWithUsernameRequest(
 
 @Serializable
 data class SignInWithPhoneNumberRequest(
-    val phoneNumber: String,
+    val usernameOrPhoneNumber: String,
     val password: String,
 )

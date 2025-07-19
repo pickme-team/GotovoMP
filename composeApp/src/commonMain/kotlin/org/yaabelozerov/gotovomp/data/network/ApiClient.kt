@@ -20,30 +20,30 @@ import org.yaabelozerov.gotovomp.data.network.model.UserDTO
 class ApiClient(
     private val httpClient: HttpClient
 ) {
-    suspend fun singUp(body: SignUpRequest): Result<HttpResponse> = runCatching {
+    suspend fun signUp(body: SignUpRequest): Result<HttpResponse> = runCatching {
         httpClient.post {
-            url("auth/signUp")
+            url("auth/signup")
             setBody(body)
         }.body()
     }
 
-    suspend fun singIn(body: SignInWithUsernameRequest): Result<HttpResponse> = runCatching {
+    suspend fun signIn(body: SignInWithUsernameRequest): Result<HttpResponse> = runCatching {
        httpClient.post {
-           url("auth/signIn")
+           url("auth/signin")
            setBody(body)
        }.body()
     }
 
-    suspend fun singIn(body: SignInWithPhoneNumberRequest): Result<SignInDTO> = runCatching {
+    suspend fun signIn(body: SignInWithPhoneNumberRequest): Result<SignInDTO> = runCatching {
         httpClient.post {
-            url("auth/signIn")
+            url("auth/signin")
             setBody(body)
         }.body()
     }
 
     suspend fun getUserData(): Result<UserDTO> = runCatching {
         httpClient.get {
-            url("auth/get")
+            url("auth/get") // TODO нас ждет глобальное переимнование хуйни
         }.body()
     }
 
