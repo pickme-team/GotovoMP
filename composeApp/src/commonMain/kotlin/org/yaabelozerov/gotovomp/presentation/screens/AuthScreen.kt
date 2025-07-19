@@ -90,6 +90,7 @@ private fun AuthColumn(
                 DomainError.NetworkServerError.CONFLICT -> Text("User already exists")
                 is DomainError.NetworkServerError -> Text("Server Error")
                 is DomainError.NetworkClientError -> Text("Client Error")
+
                 DomainError.Unknown -> Text("Unknown error")
             }
 

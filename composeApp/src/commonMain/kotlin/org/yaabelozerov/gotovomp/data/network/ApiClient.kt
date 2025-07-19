@@ -32,7 +32,7 @@ class ApiClient(
            url("Auth/SignIn")
            setBody(body)
        }.body()
-    } // TODO реализовать ингридиенты
+    }
 
     suspend fun singIn(body: SignInWithPhoneNumberRequest): Result<SignInDTO> = runCatching {
         httpClient.post {

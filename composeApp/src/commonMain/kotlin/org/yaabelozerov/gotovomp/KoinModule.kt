@@ -23,7 +23,7 @@ import org.yaabelozerov.gotovomp.viewModels.ProfileVM
 import org.yaabelozerov.gotovomp.viewModels.ViewRecipeVM
 
 object KoinModule {
-    private const val BASE_URL = "https://tarakoshka.tech/gotovo/"
+    private const val BASE_URL = "http://10.0.2.2:8080/"
     val network = module {
         single {
             HttpClient {

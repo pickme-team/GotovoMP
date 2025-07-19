@@ -1,0 +1,220 @@
+openapi: 3.0.3
+info:
+  title: GotovOmp API
+  version: 1.0.0
+
+paths:
+  /Auth/SignUp:
+    post:
+      summary: Sign up a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+      responses:
+        '200':
+          description: Success
+
+  /Auth/SignIn:
+    post:
+      summary: Sign in (with username or phone number)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/SignInWithUsernameRequest'
+                - $ref: '#/components/schemas/SignInWithPhoneNumberRequest'
+      responses:
+        '200':
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignInDTO'
+
+  /Auth/Get:
+    get:
+      summary: Get user profile
+      responses:
+        '200':
+          description: User data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+
+  /recipes/GetUsersRecipes:
+    get:
+      summary: Get current user's recipes
+      responses:
+        '200':
+          description: List of recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecipeDTO'
+
+  /recipes/Get/{id}:
+    get:
+      summary: Get a recipe by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A single recipe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeDTO'
+
+  /recipes/GetUserRecipesFeed:
+    get:
+      summary: Get paginated recipe feed
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Paginated list of recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecipeDTO'
+
+  /recipes/Add:
+    post:
+      summary: Add a new recipe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeCreateRequest'
+      responses:
+        '200':
+          description: Recipe created
+
+  /recipes/Delete/{id}:
+    delete:
+      summary: Delete a recipe by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Recipe deleted
+
+components:
+  schemas:
+    SignUpRequest:
+      type: object
+      required: [username, firstName, lastName, phoneNumber, password]
+      properties:
+        username: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+        phoneNumber: { type: string }
+        password: { type: string }
+
+    SignInWithUsernameRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string }
+        password: { type: string }
+
+    SignInWithPhoneNumberRequest:
+      type: object
+      required: [phoneNumber, password]
+      properties:
+        phoneNumber: { type: string }
+        password: { type: string }
+
+    SignInDTO:
+      type: object
+      properties:
+        token:
+          type: string
+
+    UserDTO:
+      type: object
+      required: [username, phoneNumber]
+      properties:
+        username: { type: string }
+        firstName: { type: string, nullable: true }
+        lastName: { type: string, nullable: true }
+        phoneNumber: { type: string }
+
+    RecipeDTO:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        author: { $ref: '#/components/schemas/UserDTO' }
+        text: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ingredient'
+
+    RecipeCreateRequest:
+      type: object
+      required: [name, text, tags, ingredients]
+      properties:
+        name: { type: string }
+        text: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/IngredientCreateRequest'
+        author:
+          type: object
+          additionalProperties: { type: string }
+
+    Ingredient:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        quantityType: { type: integer }
+        quantity: { type: integer }
+        category: { type: string }
+        additionalParameters: { type: string }
+
+    IngredientCreateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        quantityType: { type: integer }
+        quantity: { type: integer }
+        category: { type: string }
+        additionalParameters: { type: string }

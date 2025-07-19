@@ -32,11 +32,26 @@ fun <T> Result<T>.onSuccess(block: (T) -> Unit): Result<T> {
 }
 
 private fun Throwable?.toError(): DomainError = when (this) {
-    is ServerResponseException -> response.status.asNetworkError()
-    is ClientRequestException -> response.status.asNetworkError()
-    is SerializationException -> DomainError.NetworkClientError.SERIALIZATION
-    is UnresolvedAddressException, is IOException -> DomainError.NetworkClientError.NO_INTERNET
-    else -> DomainError.Unknown
+    is ServerResponseException -> {
+        this.printStackTrace()
+        response.status.asNetworkError()
+    }
+    is ClientRequestException -> {
+        this.printStackTrace()
+        response.status.asNetworkError()
+    }
+    is SerializationException -> {
+        this.printStackTrace()
+        DomainError.NetworkClientError.SERIALIZATION
+    }
+    is UnresolvedAddressException, is IOException -> {
+        this.printStackTrace()
+        DomainError.NetworkClientError.NO_INTERNET
+    }
+    else -> {
+        this?.printStackTrace()
+        DomainError.Unknown
+    }
 }
 
 private fun HttpStatusCode.asNetworkError(): DomainError = when (this) {
