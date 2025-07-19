@@ -22,46 +22,46 @@ class ApiClient(
 ) {
     suspend fun singUp(body: SignUpRequest): Result<HttpResponse> = runCatching {
         httpClient.post {
-            url("Auth/SignUp")
+            url("auth/signUp")
             setBody(body)
         }.body()
     }
 
     suspend fun singIn(body: SignInWithUsernameRequest): Result<HttpResponse> = runCatching {
        httpClient.post {
-           url("Auth/SignIn")
+           url("auth/signIn")
            setBody(body)
        }.body()
     }
 
     suspend fun singIn(body: SignInWithPhoneNumberRequest): Result<SignInDTO> = runCatching {
         httpClient.post {
-            url("Auth/SignIn")
+            url("auth/signIn")
             setBody(body)
         }.body()
     }
 
     suspend fun getUserData(): Result<UserDTO> = runCatching {
         httpClient.get {
-            url("Auth/Get")
+            url("auth/get")
         }.body()
     }
 
     suspend fun getOwnedRecipes(): Result<List<RecipeDTO>> = runCatching {
         httpClient.get {
-            url("recipes/GetUsersRecipes")
+            url("recipes/getUsersRecipes")
         }.body()
     }
 
     suspend fun getRecipeById(id: Long): Result<RecipeDTO> = runCatching {
         httpClient.get {
-            url("recipes/Get/$id")
+            url("recipes/get/$id")
         }.body()
     }
 
     suspend fun getRecipeFeed(limit: Int, offset: Int): Result<List<RecipeDTO>> = runCatching {
         httpClient.get {
-            url("recipes/GetUserRecipesFeed")
+            url("recipes/getUserRecipesFeed")
             parameter("limit", limit)
             parameter("offset", offset)
         }.body()
@@ -70,13 +70,13 @@ class ApiClient(
     suspend fun addRecipe(body: RecipeCreateRequest): Result<HttpResponse> = runCatching {
         httpClient.post {
             setBody(body)
-            url("recipes/Add")
+            url("recipes/add")
         }.body()
     }
 
     suspend fun deleteRecipe(id: Long): Result<HttpResponse> = runCatching {
         httpClient.delete {
-            url("/recipes/Delete/$id")
+            url("/recipes/delete/$id")
         }
     }
 }
