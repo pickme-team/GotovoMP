@@ -1,5 +1,6 @@
 package org.yaabelozerov.gotovomp.domain
 
+import io.github.aakira.napier.Napier
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.http.HttpStatusCode
@@ -33,7 +34,7 @@ fun <T> DomainResult<T>.onSuccess(action: (T) -> Unit): DomainResult<T> {
 }
 
 fun <T> DomainResult<T>.onError(action: (DomainError) -> Unit): DomainResult<T> {
-    error?.throwable?.printStackTrace()
+    Napier.e(throwable = error?.throwable) { "An error occurred" }
     if (error != null) action(error)
     return this
 }

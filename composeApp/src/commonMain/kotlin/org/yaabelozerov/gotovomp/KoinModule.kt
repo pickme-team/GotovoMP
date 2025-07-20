@@ -1,9 +1,11 @@
 package org.yaabelozerov.gotovomp
 
+import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.header
 import io.ktor.client.request.headers
@@ -22,12 +24,19 @@ import org.yaabelozerov.gotovomp.viewModels.PersonalVM
 import org.yaabelozerov.gotovomp.viewModels.ProfileVM
 import org.yaabelozerov.gotovomp.viewModels.ViewRecipeVM
 
+private object NapierLogger : Logger {
+    override fun log(message: String) {
+        Napier.d { message }
+    }
+}
+
 object KoinModule {
     private const val BASE_URL = "http://10.0.2.2:8080/"
     val network = module {
         single {
             HttpClient {
                 install(Logging) {
+                    logger = NapierLogger
                     level = LogLevel.BODY
                 }
                 install(ContentNegotiation){

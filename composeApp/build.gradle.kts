@@ -54,6 +54,8 @@ kotlin {
 
             implementation(libs.bundles.ktor)
 
+            implementation(libs.napier)
+
             implementation(libs.coil)
             implementation(libs.coil.network.ktor3)
             implementation(libs.coil.compose)
@@ -65,12 +67,12 @@ kotlin {
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.bundles.koin)
 
-            implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc10")
+            implementation(libs.richeditor.compose)
 
-            implementation("app.cash.paging:paging-compose-common:3.3.0-alpha02-0.4.0")
-            implementation("app.cash.paging:paging-common:3.3.0-alpha02-0.4.0")
+            implementation(libs.paging.compose.common)
+            implementation(libs.paging.common)
 
-            implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+            implementation(libs.material.icons.extended)
         }
 
         nativeMain.dependencies {
@@ -98,6 +100,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
