@@ -12,8 +12,7 @@ import io.ktor.client.statement.HttpResponse
 import org.yaabelozerov.gotovomp.data.network.model.RecipeCreateRequest
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
 import org.yaabelozerov.gotovomp.data.network.model.SignInDTO
-import org.yaabelozerov.gotovomp.data.network.model.SignInWithPhoneNumberRequest
-import org.yaabelozerov.gotovomp.data.network.model.SignInWithUsernameRequest
+import org.yaabelozerov.gotovomp.data.network.model.SignInRequest
 import org.yaabelozerov.gotovomp.data.network.model.SignUpRequest
 import org.yaabelozerov.gotovomp.data.network.model.UserDTO
 import org.yaabelozerov.gotovomp.domain.DomainResult
@@ -24,21 +23,14 @@ class ApiClient(
 ) {
     suspend fun singUp(body: SignUpRequest): DomainResult<HttpResponse> = runAndCatch {
         httpClient.post {
-            url("auth/signUp")
+            url("auth/signup")
             setBody(body)
         }.body()
     }
 
-    suspend fun singIn(body: SignInWithUsernameRequest): DomainResult<HttpResponse> = runAndCatch {
-       httpClient.post {
-           url("auth/signIn")
-           setBody(body)
-       }.body()
-    }
-
-    suspend fun singIn(body: SignInWithPhoneNumberRequest): DomainResult<SignInDTO> = runAndCatch {
+    suspend fun singIn(body: SignInRequest): DomainResult<SignInDTO> = runAndCatch {
         httpClient.post {
-            url("auth/signIn")
+            url("auth/signin")
             setBody(body)
         }.body()
     }

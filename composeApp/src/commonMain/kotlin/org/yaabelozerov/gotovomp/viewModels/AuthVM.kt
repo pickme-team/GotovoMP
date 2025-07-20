@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.yaabelozerov.gotovomp.data.local.settings.SettingsManager
-import org.yaabelozerov.gotovomp.data.network.model.SignInWithPhoneNumberRequest
+import org.yaabelozerov.gotovomp.data.network.model.SignInRequest
 import org.yaabelozerov.gotovomp.data.network.model.SignUpRequest
 import org.yaabelozerov.gotovomp.domain.DomainError
 import org.yaabelozerov.gotovomp.data.network.ApiClient
@@ -61,7 +61,7 @@ class AuthVM(
     fun tryLogin(phoneNumber: String, password: String) {
         val scope = viewModelScope
         viewModelScope.launch {
-            client.singIn(SignInWithPhoneNumberRequest(phoneNumber, password)).onSuccess { res ->
+            client.singIn(SignInRequest(phoneNumber, password)).onSuccess { res ->
                 SettingsManager.token = res.token
                 scope.launch {
                     UI.GlobalEventFlow.emit(GlobalEvent.Login)
