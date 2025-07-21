@@ -1,5 +1,6 @@
 package org.yaabelozerov.gotovomp.domain
 
+import io.github.aakira.napier.Napier
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.http.HttpStatusCode
@@ -8,55 +9,59 @@ import kotlinx.io.IOException
 import kotlinx.serialization.SerializationException
 
 sealed interface DomainError {
-    enum class NetworkClientError : DomainError {
-        NO_INTERNET, SERIALIZATION;
+    val throwable: Throwable
+
+    sealed interface NetworkClientError : DomainError {
+        data class NoInternet(override val throwable: Throwable) : NetworkClientError
+        data class Serialization(override val throwable: Throwable) : NetworkClientError
     }
-    enum class NetworkServerError : DomainError {
-        UNAUTHORIZED, SERVER_ERROR, CONFLICT;
+
+    sealed interface NetworkServerError : DomainError {
+        data class Unauthorized(override val throwable: Throwable) : NetworkServerError
+        data class ServerError(override val throwable: Throwable) : NetworkServerError
+        data class Conflict(override val throwable: Throwable) : NetworkServerError
+        data class NotFound(override val throwable: Throwable) : NetworkServerError
     }
-    data object Unknown : DomainError
+
+    data class Unknown(override val throwable: Throwable) : DomainError
 }
 
-fun <T> Result<T>.onError(block: (DomainError) -> Unit): Result<T> {
-    if (isFailure) {
-        block(exceptionOrNull()?.toError() ?: DomainError.Unknown)
-    }
+data class DomainResult<T>(val data: T?, val error: DomainError?)
+
+fun <T> DomainResult<T>.onSuccess(action: (T) -> Unit): DomainResult<T> {
+    if (data != null) action(data)
     return this
 }
 
-fun <T> Result<T>.onSuccess(block: (T) -> Unit): Result<T> {
-    getOrNull()?.let {
-        block(it)
-    }
+fun <T> DomainResult<T>.onError(action: (DomainError) -> Unit): DomainResult<T> {
+    Napier.e(throwable = error?.throwable) { "An error occurred" }
+    if (error != null) action(error)
     return this
+}
+
+suspend fun <T> runAndCatch(block: suspend () -> T): DomainResult<T> {
+    val result = runCatching { block() }
+    return result.getOrNull()?.let { DomainResult(it, null) } ?: DomainResult(
+        null,
+        result.exceptionOrNull().toError()
+    )
 }
 
 private fun Throwable?.toError(): DomainError = when (this) {
-    is ServerResponseException -> {
-        this.printStackTrace()
-        response.status.asNetworkError()
-    }
-    is ClientRequestException -> {
-        this.printStackTrace()
-        response.status.asNetworkError()
-    }
-    is SerializationException -> {
-        this.printStackTrace()
-        DomainError.NetworkClientError.SERIALIZATION
-    }
-    is UnresolvedAddressException, is IOException -> {
-        this.printStackTrace()
-        DomainError.NetworkClientError.NO_INTERNET
-    }
-    else -> {
-        this?.printStackTrace()
-        DomainError.Unknown
-    }
+    is ServerResponseException -> response.status.asNetworkError(this)
+    is ClientRequestException -> response.status.asNetworkError(this)
+    is SerializationException -> DomainError.NetworkClientError.Serialization(this)
+    is UnresolvedAddressException, is IOException -> DomainError.NetworkClientError.NoInternet(this)
+    else -> DomainError.Unknown(this ?: IllegalStateException("Error with no underlying exception"))
 }
 
-private fun HttpStatusCode.asNetworkError(): DomainError = when (this) {
-    HttpStatusCode.Conflict -> DomainError.NetworkServerError.CONFLICT
-    HttpStatusCode.Forbidden, HttpStatusCode.Unauthorized -> DomainError.NetworkServerError.UNAUTHORIZED
-    HttpStatusCode.InternalServerError -> DomainError.NetworkServerError.SERVER_ERROR
-    else -> DomainError.Unknown
+private fun HttpStatusCode.asNetworkError(throwable: Throwable): DomainError = when (this) {
+    HttpStatusCode.Conflict -> DomainError.NetworkServerError.Conflict(throwable)
+    HttpStatusCode.Forbidden, HttpStatusCode.Unauthorized -> DomainError.NetworkServerError.Unauthorized(
+       throwable
+    )
+    HttpStatusCode.NotFound, HttpStatusCode.NoContent -> DomainError.NetworkServerError.NotFound(throwable)
+
+    HttpStatusCode.InternalServerError -> DomainError.NetworkServerError.ServerError(throwable)
+    else -> DomainError.Unknown(throwable)
 }

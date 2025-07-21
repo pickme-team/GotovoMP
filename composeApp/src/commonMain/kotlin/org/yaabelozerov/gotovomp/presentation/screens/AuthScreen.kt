@@ -2,7 +2,6 @@ package org.yaabelozerov.gotovomp.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,24 +26,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import org.yaabelozerov.gotovomp.domain.DomainError
 import org.yaabelozerov.gotovomp.presentation.components.PhoneVisualTransformation
 import org.yaabelozerov.gotovomp.presentation.components.TextLine
 import org.yaabelozerov.gotovomp.viewModels.AuthVM
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.util.fastAll
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+import org.yaabelozerov.gotovomp.Setter
+import org.yaabelozerov.gotovomp.invoke
 import org.yaabelozerov.gotovomp.presentation.util.ValidationState
 import org.yaabelozerov.gotovomp.presentation.util.validation
 import org.yaabelozerov.gotovomp.presentation.util.isError
 import org.yaabelozerov.gotovomp.presentation.util.isValid
+import org.yaabelozerov.gotovomp.setter
 
 
 @Composable
@@ -53,12 +58,21 @@ fun AuthScreen(authVM: AuthVM = koinViewModel()) {
         authVM.checkSavedLogin()
     }
     val (checkedToken, error) = authVM.state.collectAsState().value
-    var register by remember { mutableStateOf(false) }
+    var phone by remember { mutableStateOf(TextFieldValue()) }
+    val setPhone = phone.setter { phone = it }
+    var password by remember { mutableStateOf(TextFieldValue()) }
+    val setPassword = password.setter { password = it }
+    val pager = rememberPagerState { 2 }
+    val scope = rememberCoroutineScope()
+    val scroll = { it: Int -> scope.launch {
+        pager.animateScrollToPage(it)
+    } }
     if (checkedToken) {
-        if (register) {
-            Register(error, { register = false; authVM.resetError() })
-        } else {
-            LoginWithPhone(error, { register = true; authVM.resetError() })
+        HorizontalPager(pager) { page ->
+            when (page) {
+                0 -> LoginWithPhone(setPhone, setPassword, error, { scroll(1); authVM.resetError() })
+                1 -> Register(setPhone, setPassword, error, { scroll(0); authVM.resetError() })
+            }
         }
     } else {
         Surface() { CircularProgressIndicator() }
@@ -66,79 +80,31 @@ fun AuthScreen(authVM: AuthVM = koinViewModel()) {
 }
 
 @Composable
-private fun AuthColumn(
-    topText: String,
-    left: Pair<String, () -> Unit>,
-    right: Pair<String, () -> Unit>,
-    error: DomainError?,
-    authAvailable: Boolean,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    Column(
-        modifier = modifier.fillMaxSize().padding(horizontal = 32.dp).windowInsetsPadding(WindowInsets.ime),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
-    ) {
-        Column(modifier = Modifier.padding(bottom = 8.dp)) {
-            Text(topText, style = MaterialTheme.typography.headlineSmall)
-            Text("GotovoMP", style = MaterialTheme.typography.displayMedium)
-        }
-        content()
-        error?.let {
-            when (it) {
-                DomainError.NetworkServerError.CONFLICT -> Text("User already exists")
-                is DomainError.NetworkServerError -> Text("Server Error")
-                is DomainError.NetworkClientError -> Text("Client Error")
-
-                DomainError.Unknown -> Text("Unknown error")
-            }
-
-        }
-        FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth(), ) {
-            OutlinedButton(onClick = left.second, shape = MaterialTheme.shapes.medium) {
-                Text(left.first)
-            }
-            Button(
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.weight(1f),
-                onClick = right.second,
-                colors = ButtonDefaults.buttonColors()
-                    .copy(containerColor = MaterialTheme.colorScheme.primary),
-                enabled = authAvailable
-            ) {
-                Text(right.first)
-            }
-        }
-    }
-}
-
-@Composable
 private fun LoginWithPhone(
+    phone: Setter<TextFieldValue>,
+    password: Setter<TextFieldValue>,
     error: DomainError?,
     toRegister: () -> Unit,
     authVM: AuthVM = koinViewModel(),
 ) {
-    var phoneNumber by remember { mutableStateOf(TextFieldValue()) }
-    var password by remember { mutableStateOf(TextFieldValue()) }
     val mask = "000 000 00 00"
     val maxLen = mask.count { it != ' ' }
     val maskNum = '0'
     val prefix = "+7"
-    val action = { authVM.tryLogin(prefix + phoneNumber.text, password.text) }
+    val action = { authVM.tryLogin(prefix + phone(), password()) }
     val fm = LocalFocusManager.current
     var lastFocused by remember { mutableStateOf(false) }
 
     val phoneValidation by derivedStateOf {
         when {
-            phoneNumber.text.isEmpty() -> ValidationState.Unset
-            phoneNumber.text.run { length < maxLen && all { it.isDigit() } } -> ValidationState.Invalid
+            phone().isEmpty() -> ValidationState.Unset
+            phone().run { length < maxLen && all { it.isDigit() } } -> ValidationState.Invalid
             else -> ValidationState.Valid
         }
     }
     val passwordValidation by derivedStateOf {
         when {
-            password.text.isEmpty() -> ValidationState.Unset
+            password().isEmpty() -> ValidationState.Unset
             else -> ValidationState.Valid
         }
     }
@@ -151,23 +117,26 @@ private fun LoginWithPhone(
         if (!lastFocused) fm.moveFocus(FocusDirection.Down) else { if (authAvailable) action() }
     }
 
-    LaunchedEffect(Pair(phoneNumber, password)) {
+    LaunchedEffect(Pair(phone(), password())) {
         authVM.resetError()
     }
 
-    AuthColumn(
-        topText = "Вход в",
-        left = "Регистрация" to toRegister,
-        right = "Продолжить" to action,
-        error = error,
-        authAvailable = authAvailable
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp).windowInsetsPadding(WindowInsets.ime),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
+        Column(modifier = Modifier.padding(bottom = 8.dp)) {
+            Text("Вход", style = MaterialTheme.typography.headlineSmall)
+            Text("GotovoMP", style = MaterialTheme.typography.displayMedium)
+        }
         var phoneFocused by remember { mutableStateOf(false) }
         TextLine(
-            phoneNumber,
+            phone.value,
             keyboardActions = kbdActions,
             onValueChange = {
-                if (it.text.length <= maxLen && it.text.all { it.isDigit() }) phoneNumber = it
+                if (it.text.length <= maxLen && it.text.all { it.isDigit() }) phone(it)
             },
             visualTransformation = PhoneVisualTransformation(mask, maskNum),
             prefix = "$prefix ",
@@ -177,20 +146,49 @@ private fun LoginWithPhone(
             errorText = "Неправильный номер телефона"
         )
         TextLine(
-            password,
+            password.value,
             keyboardActions = kbdActions,
-            onValueChange = { password = it },
+            onValueChange = { password(it) },
             visualTransformation = PasswordVisualTransformation(),
             placeholderText = "Пароль",
             modifier = Modifier.fillMaxWidth().onFocusChanged {
                 lastFocused = it.isFocused
             }
         )
+        error?.let {
+            when (it) {
+                is DomainError.NetworkClientError.NoInternet -> "No internet connection."
+                is DomainError.NetworkClientError.Serialization -> "Error retrieving data."
+                is DomainError.NetworkServerError.ServerError -> "Server error. Please try again later."
+                is DomainError.NetworkServerError.Unauthorized -> "Wrong combination of login and password."
+                is DomainError.NetworkServerError.NotFound, is DomainError.NetworkServerError.Conflict -> { toRegister(); null }
+                is DomainError.Unknown -> "Unknown error. Please try again later."
+            }?.let { errorMessage ->
+                Text(errorMessage, color = MaterialTheme.colorScheme.error)
+            }
+        }
+        FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth(), ) {
+            OutlinedButton(onClick = toRegister, shape = MaterialTheme.shapes.medium) {
+                Text("Регистрация")
+            }
+            Button(
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.weight(1f),
+                onClick = action,
+                colors = ButtonDefaults.buttonColors()
+                    .copy(containerColor = MaterialTheme.colorScheme.primary),
+                enabled = authAvailable
+            ) {
+                Text("Войти")
+            }
+        }
     }
 }
 
 @Composable
 private fun Register(
+    phone: Setter<TextFieldValue>,
+    password: Setter<TextFieldValue>,
     error: DomainError?,
     toLogin: () -> Unit,
     authVM: AuthVM = koinViewModel(),
@@ -198,18 +196,16 @@ private fun Register(
     var firstName by remember { mutableStateOf(TextFieldValue()) }
     var lastName by remember { mutableStateOf(TextFieldValue()) }
     var username by remember { mutableStateOf(TextFieldValue()) }
-    var phoneNumber by remember { mutableStateOf(TextFieldValue()) }
-    var password by remember { mutableStateOf(TextFieldValue()) }
     val phonePrefix = "+7"
-    val action = { authVM.tryRegister(firstName.text, lastName.text, username.text, phonePrefix + phoneNumber.text, password.text) }
+    val action = { authVM.tryRegister(firstName.text, lastName.text, username.text, phonePrefix + phone(), password()) }
     var lastFocused by remember { mutableStateOf(false) }
     val fm = LocalFocusManager.current
 
     val firstNameValid by derivedStateOf { firstName.text.validation { it.length in 3..25 && it.all(Char::isLetter) } }
     val lastNameValid by derivedStateOf { lastName.text.validation { it.length in 3..25 && it.all(Char::isLetter) } }
     val userNameValid by derivedStateOf { username.text.validation { it.length in 5..30 && it.all { it.isLetter() || it == '_' || it.isDigit() } }}
-    val phoneValid by derivedStateOf { phoneNumber.text.validation { it.length == 10 && it.all { it.isDigit() }}}
-    val passwordValid by derivedStateOf { password.text.validation { it.length in 8..30 } }
+    val phoneValid by derivedStateOf { phone().validation { it.length == 10 && it.all { it.isDigit() }}}
+    val passwordValid by derivedStateOf { password().validation { it.length in 8..30 } }
 
     val authAvailable by derivedStateOf {
         listOf(firstNameValid, lastNameValid, userNameValid, phoneValid, passwordValid).fastAll { it.isValid() }
@@ -219,16 +215,20 @@ private fun Register(
         if (!lastFocused) fm.moveFocus(FocusDirection.Down) else { if (authAvailable) action() }
     }
 
-    LaunchedEffect(Triple(firstName, lastName, username), Pair(phoneNumber, password)) {
+    LaunchedEffect(Triple(firstName, lastName, username), Pair(phone(), password())) {
         authVM.resetError()
     }
-    AuthColumn(
-        topText = "Регистрация в",
-        left = "Вход" to toLogin,
-        right = "Продолжить" to action,
-        error = error,
-        authAvailable = authAvailable
+
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp).windowInsetsPadding(WindowInsets.ime),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
+        Column(modifier = Modifier.padding(bottom = 8.dp)) {
+            Text("Регистрация", style = MaterialTheme.typography.headlineSmall)
+            Text("GotovoMP", style = MaterialTheme.typography.displayMedium)
+        }
         var firstNameFocused by remember { mutableStateOf(false) }
         TextLine(
             firstName,
@@ -264,8 +264,8 @@ private fun Register(
         val maskNum = '0'
         var phoneFocused by remember { mutableStateOf(false) }
         TextLine(
-            phoneNumber,
-            onValueChange = { if (it.text.length <= maxLen && it.text.all { it.isDigit() }) phoneNumber = it },
+            phone.value,
+            onValueChange = { if (it.text.length <= maxLen && it.text.all { it.isDigit() }) phone(it) },
             visualTransformation = PhoneVisualTransformation(mask, maskNum),
             keyboardActions = kbdActions,
             prefix = "$phonePrefix ",
@@ -276,8 +276,8 @@ private fun Register(
         )
         var passwordFocused by remember { mutableStateOf(false) }
         TextLine(
-            password,
-            onValueChange = { password = it },
+            password.value,
+            onValueChange = { password(it) },
             keyboardActions = kbdActions,
             visualTransformation = PasswordVisualTransformation(),
             placeholderText = "Пароль",
@@ -288,5 +288,32 @@ private fun Register(
             isError = passwordValid.isError() && !passwordFocused,
             errorText = "Пароль должен быть от 8 до 30 символов длинной"
         )
+        error?.let {
+            when (it) {
+                is DomainError.NetworkClientError.NoInternet -> "No internet connection."
+                is DomainError.NetworkClientError.Serialization -> "Error retrieving data."
+                is DomainError.NetworkServerError.ServerError -> "Server error. Please try again later."
+                is DomainError.NetworkServerError.Unauthorized -> "Wrong combination of login and password."
+                is DomainError.NetworkServerError.NotFound, is DomainError.NetworkServerError.Conflict -> { toLogin(); null }
+                is DomainError.Unknown -> "Unknown error. Please try again later."
+            }?.let { errorMessage ->
+                Text(errorMessage, color = MaterialTheme.colorScheme.error)
+            }
+        }
+        FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth(), ) {
+            OutlinedButton(onClick = toLogin, shape = MaterialTheme.shapes.medium) {
+                Text("Вход")
+            }
+            Button(
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.weight(1f),
+                onClick = action,
+                colors = ButtonDefaults.buttonColors()
+                    .copy(containerColor = MaterialTheme.colorScheme.primary),
+                enabled = authAvailable
+            ) {
+                Text("Зарегистрироваться")
+            }
+        }
     }
 }

@@ -6,6 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.russhwolf.settings.BuildConfig
+import io.github.aakira.napier.DebugAntilog
+import io.github.aakira.napier.Napier
 import org.koin.core.context.GlobalContext.startKoin
 
 class MainActivity : ComponentActivity() {
@@ -16,6 +19,8 @@ class MainActivity : ComponentActivity() {
         startKoin {
             modules(KoinModule.network, KoinModule.viewModels, KoinModule.domain)
         }
+
+        if (BuildConfig.DEBUG) Napier.base(DebugAntilog())
 
         setContent {
             App()

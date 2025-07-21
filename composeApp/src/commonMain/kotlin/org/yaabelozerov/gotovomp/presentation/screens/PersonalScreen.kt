@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
+import io.github.aakira.napier.Napier
 import org.yaabelozerov.gotovomp.Const
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
 import org.yaabelozerov.gotovomp.presentation.components.ScreenHeader
@@ -159,10 +160,10 @@ private fun Recipe(
 @Composable
 fun RecipeCard(title: String, imageUrl: String, onClick: () -> Unit, onHold: () -> Unit) = Card(
     modifier = Modifier.fillMaxSize().bouncyClickable(onClick = {
-        println("Clicked $title")
+        Napier.d { "Clicked $title" }
         onClick()
     }, onHold = {
-        println("Hold $title")
+        Napier.d { "Hold $title" }
         onHold()
     })
 ) {

@@ -82,6 +82,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
+import io.github.aakira.napier.Napier
 import org.yaabelozerov.gotovomp.data.network.model.IngredientCreateRequest
 import org.yaabelozerov.gotovomp.data.network.model.RecipeCreateRequest
 import org.yaabelozerov.gotovomp.presentation.components.StepTextField
@@ -191,7 +192,7 @@ fun CreateRecipeScreen(
                 ) {
                     Button(modifier = Modifier.weight(1f), onClick = {
                         steps.add("" to empty.copy())
-                        println(steps)
+                        Napier.d { steps.toString() }
                     }) {
                         Text("Добавить шаг")
                     }

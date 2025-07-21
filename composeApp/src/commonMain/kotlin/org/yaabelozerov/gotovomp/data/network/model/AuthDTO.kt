@@ -26,13 +26,7 @@ data class SignInDTO(
 )
 
 @Serializable
-data class SignInWithUsernameRequest(
-    val username: String,
-    val password: String,
-)
-
-@Serializable
-data class SignInWithPhoneNumberRequest(
-    val phoneNumber: String,
+data class SignInRequest(
+    val usernameOrPhoneNumber: String,
     val password: String,
 )

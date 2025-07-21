@@ -1,5 +1,7 @@
 package org.yaabelozerov.gotovomp
 
+import androidx.compose.ui.text.input.TextFieldValue
+
 
 fun String.nullIfBlank(): String? = if (isBlank() || isEmpty()) null else this
 
@@ -12,3 +14,11 @@ object Const {
         "https://bestlah.sg/wp-content/uploads/2024/07/Best-Peranakan-Food-Singapore.jpeg"
     )
 }
+
+data class Setter<T>(val value: T, val setter: (T) -> Unit)
+
+operator fun <T> Setter<T>.invoke(value: T) = this.setter(value)
+
+fun <T> T.setter(onChange: (T) -> Unit): Setter<T> = Setter(this, onChange)
+
+operator fun Setter<TextFieldValue>.invoke() = this.value.text
