@@ -18,7 +18,7 @@ class RecipePagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RecipeDTO> {
         val nextPage = params.key ?: 1
         var res: LoadResult<Int, RecipeDTO>? = null
-        client.getRecipeFeed(size = PAGE_SIZE, page = nextPage / PAGE_SIZE).onSuccess { resp ->
+        client.getRecipeFeed(size = PAGE_SIZE, page = nextPage - 1).onSuccess { resp ->
             res = LoadResult.Page(
                 data = resp,
                 prevKey = null,
@@ -31,7 +31,7 @@ class RecipePagingSource(
     }
 
     companion object {
-        const val PAGE_SIZE = 5
+        const val PAGE_SIZE = 2
     }
 }
 
