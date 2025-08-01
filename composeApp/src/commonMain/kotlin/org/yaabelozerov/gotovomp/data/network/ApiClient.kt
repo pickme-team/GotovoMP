@@ -37,25 +37,25 @@ class ApiClient(
 
     suspend fun getUserData(): DomainResult<UserDTO> = runAndCatch {
         httpClient.get {
-            url("auth/get")
+            url("user/me")
         }.body()
     }
 
     suspend fun getOwnedRecipes(): DomainResult<List<RecipeDTO>> = runAndCatch {
         httpClient.get {
-            url("recipes/getUsersRecipes")
+            url("recipe")
         }.body()
     }
 
     suspend fun getRecipeById(id: Long): DomainResult<RecipeDTO> = runAndCatch {
         httpClient.get {
-            url("recipes/get/$id")
+            url("recipe/$id")
         }.body()
     }
 
     suspend fun getRecipeFeed(limit: Int, offset: Int): DomainResult<List<RecipeDTO>> = runAndCatch {
         httpClient.get {
-            url("recipes/getUserRecipesFeed")
+            url("recipe/feed")
             parameter("limit", limit)
             parameter("offset", offset)
         }.body()
@@ -64,13 +64,13 @@ class ApiClient(
     suspend fun addRecipe(body: RecipeCreateRequest): DomainResult<HttpResponse> = runAndCatch {
         httpClient.post {
             setBody(body)
-            url("recipes/add")
+            url("recipe")
         }.body()
     }
 
     suspend fun deleteRecipe(id: Long): DomainResult<HttpResponse> = runAndCatch {
         httpClient.delete {
-            url("/recipes/delete/$id")
+            url("recipe/$id")
         }
     }
 }
