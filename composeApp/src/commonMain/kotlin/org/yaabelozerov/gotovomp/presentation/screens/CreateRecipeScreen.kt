@@ -86,6 +86,8 @@ import io.github.aakira.napier.Napier
 import org.yaabelozerov.gotovomp.data.network.model.IngredientCreateRequest
 import org.yaabelozerov.gotovomp.data.network.model.RecipeCreateRequest
 import org.yaabelozerov.gotovomp.presentation.components.StepTextField
+import org.yaabelozerov.gotovomp.toIntOrStay
+import org.yaabelozerov.gotovomp.transformQuantity
 import org.yaabelozerov.gotovomp.viewModels.PersonalVM
 import kotlin.math.max
 
@@ -289,8 +291,9 @@ fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifi
                                     it.name, modifier = Modifier.padding(8.dp)
                                 )
                                 Text(
-                                    it.quantity.toString(), modifier = Modifier.padding(8.dp)
+                                    "${it.quantity.toIntOrStay()} ${it.quantityType.transformQuantity()}", modifier = Modifier.padding(8.dp)
                                 )
+                                Text("Прикол")
                             }
                         }
                     }
