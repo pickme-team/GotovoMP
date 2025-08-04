@@ -432,8 +432,8 @@ private fun CreateIngredientCard(
                             onCreated(
                                 IngredientCreateRequest(
                                     name = name,
-                                    quantityType = 0,
-                                    quantity = quantity,
+                                    quantityType = "GRAMS",
+                                    quantity = quantity.toDouble(),
                                     category = category,
                                     additionalParameters = extra
                                 )
