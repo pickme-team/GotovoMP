@@ -8,5 +8,7 @@ class IOSPlatform: Platform {
 
 actual fun getPlatform(): Platform = IOSPlatform()
 actual fun getLanguage(): String {
-    TODO("Not yet implemented")
+    // Get the first preferred language, or fallback to "en"
+    val languages = NSLocale.preferredLanguages
+    return if (languages.isNotEmpty()) languages[0] as String else "en"
 }
