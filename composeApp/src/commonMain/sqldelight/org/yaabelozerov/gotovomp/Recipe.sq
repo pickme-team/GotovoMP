@@ -1,20 +1,4 @@
 -- Таблицы для ленты и сохранённых рецептов - общие. Сохраненные будут помечены isFav = true. Все свои рецепты автоматически сохранённые
-CREATE TABLE User (
-    username TEXT NOT NULL PRIMARY KEY,
-    firstName TEXT,
-    lastName TEXT,
-    phoneNumber TEXT NOT NULL
-);
-
-CREATE TABLE Ingredient (
-    id INTEGER NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL,
-    quantityType TEXT NOT NULL,
-    quantity REAL NOT NULL,
-    category TEXT NOT NULL,
-    additionalParameters TEXT NOT NULL
-);
-
 CREATE TABLE Recipe (
     id INTEGER NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -24,43 +8,15 @@ CREATE TABLE Recipe (
     FOREIGN KEY (authorUsername) REFERENCES User(username)
 );
 
-CREATE TABLE RecipeTag (
-    recipeId INTEGER NOT NULL,
-    tag TEXT NOT NULL,
-    PRIMARY KEY (recipeId, tag),
-    FOREIGN KEY (recipeId) REFERENCES Recipe(id)
-);
-
-CREATE TABLE RecipeIngredient (
-    recipeId INTEGER NOT NULL,
-    ingredientId INTEGER NOT NULL,
-    PRIMARY KEY (recipeId, ingredientId),
-    FOREIGN KEY (recipeId) REFERENCES Recipe(id),
-    FOREIGN KEY (ingredientId) REFERENCES Ingredient(id)
-);
-
--- User queries
-insertUser:
-INSERT INTO User(username, firstName, lastName, phoneNumber)
-VALUES (?, ?, ?, ?);
-
-selectUserByUsername:
-SELECT * FROM User
-WHERE username = ?;
-
--- Ingredient queries
-insertIngredient:
-INSERT INTO Ingredient(id, name, quantityType, quantity, category, additionalParameters)
-VALUES (?, ?, ?, ?, ?, ?);
-
-selectIngredientById:
-SELECT * FROM Ingredient
-WHERE id = ?;
-
 -- Recipe queries
 insertRecipe:
 INSERT INTO Recipe(id, name, authorUsername, text, isFav)
 VALUES (?, ?, ?, ?, ?);
+
+updateRecipeFavoriteStatus:
+UPDATE Recipe
+SET isFav = ?
+WHERE id = ?;
 
 selectRecipeById:
 SELECT * FROM Recipe
@@ -72,26 +28,36 @@ FROM Recipe
 JOIN User ON Recipe.authorUsername = User.username
 WHERE Recipe.id = ?;
 
-selectRecipesByAuthor:
+selectFavoriteRecipes:
 SELECT * FROM Recipe
-WHERE authorUsername = ?;
+WHERE isFav = 1;
 
--- Tag queries
-insertTag:
-INSERT INTO RecipeTag(recipeId, tag)
-VALUES (?, ?);
+-- Transaction
+insertFullRecipe:
+BEGIN TRANSACTION;
 
-selectTagsForRecipe:
-SELECT tag FROM RecipeTag
-WHERE recipeId = ?;
+-- Insert or update author
+INSERT OR REPLACE INTO User(username, firstName, lastName, phoneNumber)
+VALUES (:authorUsername, :firstName, :lastName, :phoneNumber);
 
--- Recipe-Ingredient queries
-insertRecipeIngredient:
-INSERT INTO RecipeIngredient(recipeId, ingredientId)
-VALUES (?, ?);
+-- Insert the recipe
+INSERT OR REPLACE INTO Recipe(id, name, authorUsername, text, isFav)
+VALUES (:recipeId, :recipeName, :authorUsername, :recipeText, :isFav);
 
-selectIngredientsForRecipe:
-SELECT Ingredient.*
-FROM Ingredient
-JOIN RecipeIngredient ON Ingredient.id = RecipeIngredient.ingredientId
-WHERE RecipeIngredient.recipeId = ?;
+-- Insert ingredients (assuming they already exist in DB)
+INSERT OR REPLACE INTO Ingredient(id, name, quantityType, quantity, category, additionalParameters)
+VALUES (:ingredientId, :ingredientName, :quantityType, :quantity, :category, :additionalParameters);
+
+-- Link recipe to ingredients
+INSERT OR REPLACE INTO RecipeIngredient(recipeId, ingredientId)
+VALUES (:recipeId, :ingredientId);
+
+-- Insert tags (if they don't exist)
+INSERT OR IGNORE INTO Tag(id, tag)
+VALUES (:tagId, :tagText);
+
+-- Link recipe to tags
+INSERT OR REPLACE INTO RecipeTag(recipeId, tagId)
+VALUES (:recipeId, :tagId);
+
+COMMIT;

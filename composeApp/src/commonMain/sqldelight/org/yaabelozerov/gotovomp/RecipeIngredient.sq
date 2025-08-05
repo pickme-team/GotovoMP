@@ -1,0 +1,24 @@
+CREATE TABLE RecipeIngredient (
+    recipeId INTEGER NOT NULL,
+    ingredientId INTEGER NOT NULL,
+    PRIMARY KEY (recipeId, ingredientId),
+    FOREIGN KEY (recipeId) REFERENCES Recipe(id),
+    FOREIGN KEY (ingredientId) REFERENCES Ingredient(id)
+);
+
+-- Recipe-Ingredient queries
+insertRecipeIngredient:
+INSERT INTO RecipeIngredient(recipeId, ingredientId)
+VALUES (?, ?);
+
+selectIngredientsForRecipe:
+SELECT Ingredient.*
+FROM Ingredient
+JOIN RecipeIngredient ON Ingredient.id = RecipeIngredient.ingredientId
+WHERE RecipeIngredient.recipeId = ?;
+
+selectRecipesByIngredient:
+SELECT DISTINCT Recipe.*
+FROM Recipe
+JOIN RecipeIngredient ON Recipe.id = RecipeIngredient.recipeId
+WHERE RecipeIngredient.ingredientId = ?;

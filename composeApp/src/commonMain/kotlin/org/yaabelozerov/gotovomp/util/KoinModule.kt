@@ -1,4 +1,4 @@
-package org.yaabelozerov.gotovomp
+package org.yaabelozerov.gotovomp.util
 
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -13,10 +13,14 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import org.yaabelozerov.gotovomp.data.RecipeRepoImpl
+import org.yaabelozerov.gotovomp.data.local.Database.Dao
 import org.yaabelozerov.gotovomp.data.local.settings.SettingsManager
 import org.yaabelozerov.gotovomp.data.network.ApiClient
+import org.yaabelozerov.gotovomp.domain.RecipeRepo
 import org.yaabelozerov.gotovomp.viewModels.AuthVM
 import org.yaabelozerov.gotovomp.viewModels.FeedScreenVM
 import org.yaabelozerov.gotovomp.viewModels.PersonalVM
@@ -30,7 +34,7 @@ private object NapierLogger : Logger {
 }
 
 object KoinModule {
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private const val BASE_URL = "http://45.43.77.227:8080/"
     val network = module {
         single {
             HttpClient {
@@ -59,12 +63,17 @@ object KoinModule {
             }
         }
         factory<ApiClient> { ApiClient(get()) }
+
     }
     val viewModels = module {
         viewModel { AuthVM(get()) }
         viewModel { FeedScreenVM(get()) }
-        viewModel { PersonalVM(get()) }
+        viewModel { PersonalVM(get(), get()) }
         viewModel { ProfileVM(get()) }
         viewModel { ViewRecipeVM(get()) }
+    }
+    val domain = module {
+        single { Dao(createDriver()) }
+        single<RecipeRepo> { RecipeRepoImpl(get(), get(), get()) }
     }
 }

@@ -1,4 +1,4 @@
-package org.yaabelozerov.gotovomp
+package org.yaabelozerov.gotovomp.util
 
 import androidx.compose.ui.text.input.TextFieldValue
 

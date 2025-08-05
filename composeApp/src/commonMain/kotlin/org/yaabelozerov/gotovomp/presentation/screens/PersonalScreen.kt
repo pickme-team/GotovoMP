@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import io.github.aakira.napier.Napier
-import org.yaabelozerov.gotovomp.Const
+import org.yaabelozerov.gotovomp.util.Const
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
 import org.yaabelozerov.gotovomp.presentation.components.ScreenHeader
 import org.yaabelozerov.gotovomp.presentation.util.Nav

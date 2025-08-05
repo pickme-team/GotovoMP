@@ -1,4 +1,4 @@
-package org.yaabelozerov.gotovomp
+package org.yaabelozerov.gotovomp.util
 
 import app.cash.sqldelight.db.SqlDriver
 import org.yaabelozerov.RecipeDatabase
@@ -11,6 +11,4 @@ expect fun getPlatform(): Platform
 
 expect fun getLanguage(): String
 
-expect class DriverFactory {
-    fun createDriver(): SqlDriver
-}
+expect fun createDriver(): SqlDriver

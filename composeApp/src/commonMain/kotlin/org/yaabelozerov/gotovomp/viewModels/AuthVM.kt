@@ -15,7 +15,7 @@ import org.yaabelozerov.gotovomp.domain.GlobalEvent
 import org.yaabelozerov.gotovomp.domain.UI
 import org.yaabelozerov.gotovomp.domain.onError
 import org.yaabelozerov.gotovomp.domain.onSuccess
-import org.yaabelozerov.gotovomp.nullIfBlank
+import org.yaabelozerov.gotovomp.util.nullIfBlank
 
 class AuthVM(
     private val client: ApiClient,

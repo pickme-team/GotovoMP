@@ -1,9 +1,12 @@
-package org.yaabelozerov.gotovomp
+package org.yaabelozerov.gotovomp.util
 
-import android.content.Context
 import android.os.Build
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.module.dsl.singleOf
+import org.koin.core.scope.Scope
+import org.koin.dsl.module
 import org.yaabelozerov.RecipeDatabase
 import java.util.Locale
 
@@ -17,8 +20,10 @@ actual fun getLanguage(): String {
     return language
 }
 
-actual class DriverFactory(private val context: Context) {
-    actual fun createDriver(): SqlDriver {
-        return AndroidSqliteDriver(RecipeDatabase.Schema, context, "Recipe.db")
-    }
+actual fun createDriver(): SqlDriver {
+    return AndroidSqliteDriver(RecipeDatabase.Schema, android.app.Application(), "Recipe.db")
+}
+
+val androidModule = module {
+    single<NetworkMonitor> { AndroidNetworkMonitor(androidContext()) }
 }

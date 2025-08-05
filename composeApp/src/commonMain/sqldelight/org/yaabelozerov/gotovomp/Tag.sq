@@ -1,0 +1,21 @@
+CREATE TABLE Tag (
+    tag TEXT NOT NULL,
+    id INTEGER NOT NULL PRIMARY KEY
+);
+
+-- Tag queries
+insertTag:
+INSERT INTO Tag(tag, id)
+VALUES (?, ?);
+
+selectTagById:
+SELECT * FROM Tag
+WHERE id = ?;
+
+selectAllTags:
+SELECT * FROM Tag;
+
+selectTagByText:
+SELECT * FROM Tag
+WHERE tag = ?
+LIMIT 1;

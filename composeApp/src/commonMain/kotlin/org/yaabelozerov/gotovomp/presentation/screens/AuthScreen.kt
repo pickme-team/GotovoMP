@@ -43,13 +43,13 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.util.fastAll
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
-import org.yaabelozerov.gotovomp.Setter
-import org.yaabelozerov.gotovomp.invoke
+import org.yaabelozerov.gotovomp.util.Setter
+import org.yaabelozerov.gotovomp.util.invoke
 import org.yaabelozerov.gotovomp.presentation.util.ValidationState
 import org.yaabelozerov.gotovomp.presentation.util.validation
 import org.yaabelozerov.gotovomp.presentation.util.isError
 import org.yaabelozerov.gotovomp.presentation.util.isValid
-import org.yaabelozerov.gotovomp.setter
+import org.yaabelozerov.gotovomp.util.setter
 
 
 @Composable
