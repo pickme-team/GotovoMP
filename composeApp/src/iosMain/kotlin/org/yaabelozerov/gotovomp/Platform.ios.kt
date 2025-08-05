@@ -1,5 +1,10 @@
 package org.yaabelozerov.gotovomp
 
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.native.NativeSqliteDriver
+import org.yaabelozerov.RecipeDatabase
+import platform.Foundation.NSLocale
+import platform.Foundation.preferredLanguages
 import platform.UIKit.UIDevice
 
 class IOSPlatform: Platform {
@@ -11,4 +16,10 @@ actual fun getLanguage(): String {
     // Get the first preferred language, or fallback to "en"
     val languages = NSLocale.preferredLanguages
     return if (languages.isNotEmpty()) languages[0] as String else "en"
+}
+
+actual class DriverFactory {
+    actual fun createDriver(): SqlDriver {
+        return NativeSqliteDriver(RecipeDatabase.Schema, "Recipe.db")
+    }
 }
