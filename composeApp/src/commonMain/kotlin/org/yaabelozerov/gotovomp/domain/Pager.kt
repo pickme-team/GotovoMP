@@ -76,7 +76,6 @@ class Pager<T>(
     private suspend fun loadPageInternal(isRefreshing: Boolean = false) {
         val pageToLoad = nextPageKey ?: return
         try {
-            delay(3000)
             val result = source.loadPage(pageToLoad, pageSize)
 
             val currentItems = when (val current = _state.value) {
@@ -88,7 +87,7 @@ class Pager<T>(
             _state.update {
                 PagerState.HasContent(
                     content = currentItems + result.items,
-                    hasMore = result.nextKey != null
+                    hasMore = result.nextKey != null && result.items.isNotEmpty()
                 )
             }
         } catch (e: Throwable) {

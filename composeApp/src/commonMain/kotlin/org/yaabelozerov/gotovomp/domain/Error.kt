@@ -34,8 +34,10 @@ fun <T> DomainResult<T>.onSuccess(action: (T) -> Unit): DomainResult<T> {
 }
 
 fun <T> DomainResult<T>.onError(action: (DomainError) -> Unit): DomainResult<T> {
-    Napier.e(throwable = error?.throwable) { "An error occurred" }
-    if (error != null) action(error)
+    if (error != null) {
+        Napier.e(throwable = error.throwable) { "An error occurred" }
+        action(error)
+    }
     return this
 }
 
