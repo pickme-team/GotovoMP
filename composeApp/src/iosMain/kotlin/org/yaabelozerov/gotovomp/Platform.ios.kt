@@ -7,3 +7,8 @@ class IOSPlatform: Platform {
 }
 
 actual fun getPlatform(): Platform = IOSPlatform()
+actual fun getLanguage(): String {
+    // Get the first preferred language, or fallback to "en"
+    val languages = NSLocale.preferredLanguages
+    return if (languages.isNotEmpty()) languages[0] as String else "en"
+}

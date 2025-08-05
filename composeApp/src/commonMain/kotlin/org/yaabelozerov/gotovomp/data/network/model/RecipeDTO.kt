@@ -16,8 +16,8 @@ data class RecipeDTO(
 data class Ingredient(
     val id: Long,
     val name: String,
-    val quantityType: Long,
-    val quantity: Long,
+    val quantityType: String,
+    val quantity: Double,
     val category: String,
     val additionalParameters: String,
 )
@@ -36,8 +36,8 @@ data class RecipeCreateRequest(
 @Serializable
 data class IngredientCreateRequest(
     val name: String,
-    val quantityType: Long,
-    val quantity: Long,
+    val quantityType: String,
+    val quantity: Double,
     val category: String,
     val additionalParameters: String,
 )

@@ -22,3 +22,27 @@ operator fun <T> Setter<T>.invoke(value: T) = this.setter(value)
 fun <T> T.setter(onChange: (T) -> Unit): Setter<T> = Setter(this, onChange)
 
 operator fun Setter<TextFieldValue>.invoke() = this.value.text
+
+fun Double.toIntOrStay() = if (this % 1 == 0.0) this.toInt() else this
+
+fun String.transformQuantity(): String {
+    val mapRu = mapOf(
+        "PSC" to "шт.",
+        "GRAMS" to "г.",
+        "KGS" to "кг.",
+        "L" to "л.",
+        "MLS" to "мл.",
+    )
+    val mapEn = mapOf(
+        "PSC" to "pcs.",
+        "GRAMS" to "g.",
+        "KGS" to "kg.",
+        "L" to "l.",
+        "MLS" to "ml.",
+    )
+    return if (getLanguage() == "ru") {
+        mapRu[this] ?: this
+    } else {
+        mapEn[this] ?: this
+    }
+}
