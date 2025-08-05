@@ -34,8 +34,10 @@ fun <T> DomainResult<T>.onSuccess(action: (T) -> Unit): DomainResult<T> {
 }
 
 fun <T> DomainResult<T>.onError(action: (DomainError) -> Unit): DomainResult<T> {
-    Napier.e(throwable = error?.throwable) { "An error occurred" }
-    if (error != null) action(error)
+    if (error != null) {
+        Napier.e(throwable = error.throwable) { "An error occurred" }
+        action(error)
+    }
     return this
 }
 
@@ -43,11 +45,11 @@ suspend fun <T> runAndCatch(block: suspend () -> T): DomainResult<T> {
     val result = runCatching { block() }
     return result.getOrNull()?.let { DomainResult(it, null) } ?: DomainResult(
         null,
-        result.exceptionOrNull().toError()
+        result.exceptionOrNull().toDomainError()
     )
 }
 
-private fun Throwable?.toError(): DomainError = when (this) {
+fun Throwable?.toDomainError(): DomainError = when (this) {
     is ServerResponseException -> response.status.asNetworkError(this)
     is ClientRequestException -> response.status.asNetworkError(this)
     is SerializationException -> DomainError.NetworkClientError.Serialization(this)
