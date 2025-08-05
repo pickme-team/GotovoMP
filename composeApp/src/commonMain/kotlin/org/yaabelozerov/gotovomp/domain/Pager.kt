@@ -1,9 +1,11 @@
 package org.yaabelozerov.gotovomp.domain
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -11,17 +13,17 @@ import kotlin.collections.emptyList
 
 data class Pageable<T>(
     val items: List<T>,
-    val nextKey: Int?
+    val nextKey: Int?,
 )
 
 sealed interface PagerState<out T> {
-    data object Initial: PagerState<Nothing>
-    data object Loading: PagerState<Nothing>
+    data object Initial : PagerState<Nothing>
+    data object Loading : PagerState<Nothing>
     data class HasContent<T>(
         val content: List<T>,
-        val hasMore: Boolean
-    ): PagerState<T>
-    data object EndReached : PagerState<Nothing>
+        val hasMore: Boolean,
+    ) : PagerState<T>
+
     data class Error(val error: DomainError) : PagerState<Nothing>
 }
 
@@ -33,7 +35,7 @@ class Pager<T>(
     private val source: PagerSource<T>,
     private val pageSize: Int = 20,
     private val scope: CoroutineScope,
-    private val initialPage: Int = 0
+    private val initialPage: Int = 0,
 ) {
     private val _state = MutableStateFlow<PagerState<T>>(PagerState.Initial)
     val state: StateFlow<PagerState<T>> = _state.asStateFlow()
@@ -45,7 +47,7 @@ class Pager<T>(
         scope.launch {
             mutex.withLock {
                 nextPageKey = initialPage
-                _state.value = PagerState.Loading
+                _state.update { PagerState.Loading }
                 loadPageInternal(isRefreshing = true)
             }
         }
@@ -74,6 +76,7 @@ class Pager<T>(
     private suspend fun loadPageInternal(isRefreshing: Boolean = false) {
         val pageToLoad = nextPageKey ?: return
         try {
+            delay(3000)
             val result = source.loadPage(pageToLoad, pageSize)
 
             val currentItems = when (val current = _state.value) {
@@ -82,12 +85,14 @@ class Pager<T>(
             }
 
             nextPageKey = result.nextKey
-            _state.value = PagerState.HasContent(
-                content = currentItems + result.items,
-                hasMore = result.nextKey != null
-            )
+            _state.update {
+                PagerState.HasContent(
+                    content = currentItems + result.items,
+                    hasMore = result.nextKey != null
+                )
+            }
         } catch (e: Throwable) {
-            _state.value = PagerState.Error(e.toDomainError())
+            _state.update { PagerState.Error(e.toDomainError()) }
         }
     }
 }
