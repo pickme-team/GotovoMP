@@ -293,7 +293,6 @@ fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifi
                                 Text(
                                     "${it.quantity.toIntOrStay()} ${it.quantityType.transformQuantity()}", modifier = Modifier.padding(8.dp)
                                 )
-                                Text("Прикол")
                             }
                         }
                     }
