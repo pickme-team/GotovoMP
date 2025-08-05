@@ -209,7 +209,7 @@ fun RecipeCard(
             } else Text(
                 "Автор не указал ингредиенты",
                 color = LocalTextStyle.current.color.copy(0.5f),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
+                modifier = Modifier.fillMaxWidth().padding(12.dp)
             )
             Row(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),

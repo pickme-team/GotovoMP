@@ -14,15 +14,21 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -33,11 +39,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import org.koin.compose.viewmodel.koinViewModel
 import org.yaabelozerov.gotovomp.Const
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
+import org.yaabelozerov.gotovomp.domain.DomainError
 import org.yaabelozerov.gotovomp.domain.PagerState
 import org.yaabelozerov.gotovomp.presentation.components.RecipeCard
 import org.yaabelozerov.gotovomp.presentation.components.ScreenHeader
@@ -81,9 +89,7 @@ fun SharedTransitionScope.FeedScreen(
                         })
                 }
 
-                is PagerState.Error -> item {
-                    Text(s.error.toString())
-                }
+                is PagerState.Error -> error(error = s.error, onRefresh = { pager.refresh() })
 
                 else -> announcement(content = {
                     Text("Загружаем рецепты для вас")
@@ -94,7 +100,43 @@ fun SharedTransitionScope.FeedScreen(
     }
 }
 
-private fun LazyListScope.announcement(content: @Composable () -> Unit, onLoadMore: () -> Unit) {
+private fun LazyListScope.error(error: DomainError, onRefresh: () -> Unit) {
+    item {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(
+                16.dp, Alignment.CenterVertically
+            )
+        ) {
+            Text(
+                text = when (error) {
+                    is DomainError.NetworkClientError.NoInternet -> "Нет подключения"
+                    is DomainError.NetworkClientError.Serialization -> "Ошибка получения данных"
+                    is DomainError.NetworkServerError.ServerError -> "Ошибка на сервере"
+                    is DomainError.NetworkServerError.Unauthorized -> "Вы не можете просматривать эту страницу"
+                    else -> "Неизвестная ошибка"
+                }, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold
+            )
+            OutlinedTextField(
+                value = error.throwable.message.toString(),
+                onValueChange = {},
+                readOnly = true,
+                shape = MaterialTheme.shapes.medium,
+                textStyle = MaterialTheme.typography.bodySmall
+            )
+            Button(onClick = { onRefresh() }, shape = MaterialTheme.shapes.medium) {
+                Icon(Icons.Default.Refresh, contentDescription = null)
+                Text("Обновить", modifier = Modifier.padding(horizontal = 8.dp))
+            }
+        }
+    }
+}
+
+private fun LazyListScope.announcement(
+    content: @Composable () -> Unit,
+    onLoadMore: () -> Unit,
+) {
     item {
         LaunchedEffect(Unit) { onLoadMore() }
         Row(
@@ -144,9 +186,11 @@ private fun LazyListScope.recipeList(
             ) {
                 Text(if (it) "Загружаем рецепты для вас" else "На этом всё")
                 if (!it) {
-                    OutlinedCard(modifier = Modifier.clip(MaterialTheme.shapes.medium).clickable {
-                        onLoadMore(true)
-                    }, shape = MaterialTheme.shapes.medium) {
+                    OutlinedCard(
+                        modifier = Modifier.clip(MaterialTheme.shapes.medium).clickable {
+                            onLoadMore(true)
+                        }, shape = MaterialTheme.shapes.medium
+                    ) {
                         Text(
                             "Обновить",
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
