@@ -22,7 +22,7 @@ data class Ingredient(
     val additionalParameters: String,
 )
 
-fun Ingredient.toRequest() = IngredientCreateRequest(name, quantityType, quantity.toDouble(), category, additionalParameters)
+fun Ingredient.toRequest() = IngredientCreateRequest(name, quantityType, quantity, category, additionalParameters)
 
 @Serializable
 data class RecipeCreateRequest(
