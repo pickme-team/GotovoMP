@@ -18,6 +18,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        activity = this
 
         startKoin {
             androidContext(this@MainActivity.applicationContext)
@@ -29,6 +30,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             App()
         }
+    }
+    companion object {
+        lateinit var activity: ComponentActivity
     }
 }
 
