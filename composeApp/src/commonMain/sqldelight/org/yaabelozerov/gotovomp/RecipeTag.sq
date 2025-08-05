@@ -1,0 +1,23 @@
+CREATE TABLE RecipeTag (
+    recipeId INTEGER NOT NULL,
+    tagId INTEGER NOT NULL,
+    FOREIGN KEY (recipeId) REFERENCES Recipe(id),
+    FOREIGN KEY (tagId) REFERENCES Tag(id)
+);
+
+-- Recipe-Tag association queries
+insertRecipeTag:
+INSERT INTO RecipeTag(recipeId, tagId)
+VALUES (?, ?);
+
+selectTagsForRecipe:
+SELECT Tag.*
+FROM Tag
+JOIN RecipeTag ON Tag.id = RecipeTag.tagId
+WHERE RecipeTag.recipeId = ?;
+
+selectRecipesByTag:
+SELECT Recipe.*
+FROM Recipe
+JOIN RecipeTag ON Recipe.id = RecipeTag.recipeId
+WHERE RecipeTag.tagId = ?;

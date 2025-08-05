@@ -43,13 +43,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import org.koin.compose.viewmodel.koinViewModel
-import org.yaabelozerov.gotovomp.Const
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
 import org.yaabelozerov.gotovomp.domain.DomainError
 import org.yaabelozerov.gotovomp.domain.PagerState
 import org.yaabelozerov.gotovomp.presentation.components.RecipeCard
 import org.yaabelozerov.gotovomp.presentation.components.ScreenHeader
 import org.yaabelozerov.gotovomp.presentation.util.Nav
+import org.yaabelozerov.gotovomp.util.Const
 import org.yaabelozerov.gotovomp.viewModels.FeedScreenVM
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)

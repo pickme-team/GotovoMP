@@ -33,14 +33,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
 import org.koin.compose.viewmodel.koinViewModel
-import org.yaabelozerov.gotovomp.Const
-import org.yaabelozerov.gotovomp.toIntOrStay
-import org.yaabelozerov.gotovomp.transformQuantity
+import org.yaabelozerov.gotovomp.util.Const
+import org.yaabelozerov.gotovomp.util.toIntOrStay
+import org.yaabelozerov.gotovomp.util.transformQuantity
 import org.yaabelozerov.gotovomp.viewModels.ViewRecipeVM
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)

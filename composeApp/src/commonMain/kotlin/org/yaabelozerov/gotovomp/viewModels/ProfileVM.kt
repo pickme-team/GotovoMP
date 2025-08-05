@@ -41,6 +41,7 @@ class ProfileVM(
     private fun fetchUserData() {
         viewModelScope.launch(Dispatchers.IO) {
             api.getUserData().onSuccess { res ->
+                SettingsManager.username = res.username
                 _state.update { res.run {
                     State(
                         name = firstName.orEmpty(), surname = lastName.orEmpty(), username = username
@@ -56,6 +57,7 @@ class ProfileVM(
         viewModelScope.launch {
             _state.update { State() }
             SettingsManager.token = ""
+            SettingsManager.username = ""
             UI.GlobalEventFlow.emit(GlobalEvent.Logout)
         }
     }

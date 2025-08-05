@@ -2,12 +2,20 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlin.serialization)
+    id("app.cash.sqldelight") version "2.1.0"
+
+}
+
+repositories {
+    google()
+    mavenCentral()
 }
 
 kotlin {
@@ -36,6 +44,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
 
             implementation(libs.ktor.client.okhttp)
+
+            implementation("app.cash.sqldelight:android-driver:2.1.0")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -78,6 +88,14 @@ kotlin {
         nativeMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
+
+        iosMain.dependencies {
+            implementation("app.cash.sqldelight:native-driver:2.1.0")
+        }
+
+        jvmMain.dependencies {
+            implementation("app.cash.sqldelight:sqlite-driver:2.1.0")
+        }
     }
 }
 
@@ -113,5 +131,13 @@ dependencies {
     implementation(libs.androidx.material3.android)
     implementation(libs.navigation.compose)
     debugImplementation(compose.uiTooling)
+}
+
+sqldelight {
+    databases {
+        create("RecipeDatabase") {
+            packageName.set("org.yaabelozerov")
+        }
+    }
 }
 

@@ -1,6 +1,5 @@
 package org.yaabelozerov.gotovomp.viewModels
 
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -16,13 +15,14 @@ import org.yaabelozerov.gotovomp.data.network.model.RecipeCreateRequest
 import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
 import org.yaabelozerov.gotovomp.domain.DomainError
 import org.yaabelozerov.gotovomp.domain.GlobalEvent
+import org.yaabelozerov.gotovomp.domain.RecipeRepo
 import org.yaabelozerov.gotovomp.domain.UI
 import org.yaabelozerov.gotovomp.domain.onError
 import org.yaabelozerov.gotovomp.domain.onSuccess
-import org.yaabelozerov.gotovomp.nullIfBlank
+import org.yaabelozerov.gotovomp.util.nullIfBlank
 
 
-class PersonalVM(private val api: ApiClient): ViewModel() {
+class PersonalVM(private val api: ApiClient, private val repo: RecipeRepo): ViewModel() {
     private val _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
 
@@ -76,9 +76,7 @@ class PersonalVM(private val api: ApiClient): ViewModel() {
     }
 
     private suspend fun createRecipe(recipe: RecipeCreateRequest) {
-        SettingsManager.token.nullIfBlank()?.let {
-            api.addRecipe(recipe)
-        }
+        repo.createRecipe(recipe)
     }
 
     fun updateIngredientQuery(query: String) {

@@ -1,0 +1,22 @@
+CREATE TABLE Ingredient (
+    id INTEGER NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    quantityType TEXT NOT NULL,
+    quantity REAL NOT NULL,
+    category TEXT NOT NULL,
+    additionalParameters TEXT NOT NULL
+);
+
+-- Ingredient queries
+insertIngredient:
+INSERT INTO Ingredient(id, name, quantityType, quantity, category, additionalParameters)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectIngredientById:
+SELECT * FROM Ingredient
+WHERE id = ?;
+
+selectIngredientByNameAndCategory:
+SELECT * FROM Ingredient
+WHERE name = ? AND category = ?
+LIMIT 1;

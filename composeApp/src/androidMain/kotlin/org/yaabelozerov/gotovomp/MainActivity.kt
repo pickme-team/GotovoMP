@@ -9,15 +9,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.russhwolf.settings.BuildConfig
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
+import org.yaabelozerov.gotovomp.util.KoinModule
+import org.yaabelozerov.gotovomp.util.androidModule
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        activity = this
 
         startKoin {
-            modules(KoinModule.network, KoinModule.viewModels)
+            androidContext(this@MainActivity.applicationContext)
+            modules(KoinModule.network, KoinModule.viewModels, KoinModule.domain, androidModule)
         }
 
         if (BuildConfig.DEBUG) Napier.base(DebugAntilog())
@@ -25,6 +30,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             App()
         }
+    }
+    companion object {
+        lateinit var activity: ComponentActivity
     }
 }
 

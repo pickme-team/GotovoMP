@@ -9,7 +9,7 @@ data class RecipeShort(
 
 )
 
-data class Recipe(
+data class Recipe( // TODO: Точно нам нужен этот класс? мб по-нормальному переписать или удалить его?
     val user: UserShort,
     val ingredients: List<Ingredient>,
     val previewPhotos: List<String>,
