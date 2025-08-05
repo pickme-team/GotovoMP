@@ -43,11 +43,11 @@ suspend fun <T> runAndCatch(block: suspend () -> T): DomainResult<T> {
     val result = runCatching { block() }
     return result.getOrNull()?.let { DomainResult(it, null) } ?: DomainResult(
         null,
-        result.exceptionOrNull().toError()
+        result.exceptionOrNull().toDomainError()
     )
 }
 
-private fun Throwable?.toError(): DomainError = when (this) {
+fun Throwable?.toDomainError(): DomainError = when (this) {
     is ServerResponseException -> response.status.asNetworkError(this)
     is ClientRequestException -> response.status.asNetworkError(this)
     is SerializationException -> DomainError.NetworkClientError.Serialization(this)

@@ -53,14 +53,6 @@ class ApiClient(
         }.body()
     }
 
-    suspend fun getRecipeFeed(size: Int, page: Int): DomainResult<List<RecipeDTO>> = runAndCatch {
-        httpClient.get {
-            url("recipe/feed")
-            parameter("size", size)
-            parameter("page", page)
-        }.body()
-    }
-
     suspend fun addRecipe(body: RecipeCreateRequest): DomainResult<HttpResponse> = runAndCatch {
         httpClient.post {
             setBody(body)

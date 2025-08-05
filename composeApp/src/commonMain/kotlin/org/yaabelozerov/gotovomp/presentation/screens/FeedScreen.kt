@@ -4,34 +4,29 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.flowWithLifecycle
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import androidx.paging.LoadState
-import androidx.paging.PagingData
-import app.cash.paging.compose.collectAsLazyPagingItems
-import coil3.compose.LocalPlatformContext
 import org.koin.compose.viewmodel.koinViewModel
 import org.yaabelozerov.gotovomp.Const
-import org.yaabelozerov.gotovomp.domain.DomainError
+import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
+import org.yaabelozerov.gotovomp.domain.Pager
+import org.yaabelozerov.gotovomp.domain.PagerState
 import org.yaabelozerov.gotovomp.presentation.components.RecipeCard
-import org.yaabelozerov.gotovomp.presentation.components.ScreenHeader
 import org.yaabelozerov.gotovomp.presentation.util.Nav
 import org.yaabelozerov.gotovomp.viewModels.FeedScreenVM
 
@@ -42,36 +37,64 @@ fun SharedTransitionScope.FeedScreen(
     feedScreenVM: FeedScreenVM = koinViewModel(),
     animatedScope: AnimatedContentScope,
 ) {
-    val recipes = feedScreenVM.recipes.collectAsLazyPagingItems()
+    val pager = feedScreenVM.pager
+    val pagerState by pager.state.collectAsState()
+    val lazyListState = rememberLazyListState()
     LaunchedEffect(Unit) {
-        recipes.refresh()
+        pager.refresh()
     }
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
-        isRefreshing = when (recipes.loadState.refresh) {
-            is LoadState.Error, is LoadState.NotLoading -> false
-            else -> true
-        },
-        onRefresh = {
-            recipes.refresh()
-        },
+        isRefreshing = pagerState is PagerState.Loading,
+        onRefresh = pager::refresh,
     ) {
-        LazyColumn {
-            item {
-                ScreenHeader("Рекоммендации")
+        LazyColumn(
+            state = lazyListState
+        ) {
+            when (val s = pagerState) {
+                is PagerState.HasContent -> {
+                    recipeList(content = s, onLoadMore = pager::loadNextPage, onNavigateTo = {
+                        navCtrl.navigate(Nav.VIEW.route + "/${it}")
+                    }, addModifierWithId = {
+                        Modifier.sharedBounds(
+                            rememberSharedContentState("view${it}"),
+                            animatedVisibilityScope = animatedScope
+                        )
+                    })
+                }
+
+                is PagerState.Error -> item {
+                    Text(s.error.toString())
+                }
+
+                else -> item {
+                    CircularProgressIndicator()
+                }
             }
-            items(recipes.itemCount) { index ->
-                val recipe = recipes[index] ?: return@items
-                RecipeCard(
-                    recipe = recipe,
-                    imageUrl = Const.placeholderImages.random(),
-                    onClick = { navCtrl.navigate(Nav.VIEW.route + "/${recipe.id}") },
-                    modifier = Modifier.fillParentMaxWidth().animateItem().sharedBounds(
-                        rememberSharedContentState("view${recipe.id}",),
-                        animatedVisibilityScope = animatedScope
-                    )
-                )
-            }
+
+        }
+    }
+}
+
+
+private fun LazyListScope.recipeList(
+    content: PagerState.HasContent<RecipeDTO>,
+    onLoadMore: () -> Unit,
+    onNavigateTo: (Long) -> Unit,
+    addModifierWithId: @Composable (Long) -> Modifier,
+) {
+    items(content.content) { recipe ->
+        RecipeCard(
+            recipe = recipe,
+            imageUrl = Const.placeholderImages.random(),
+            onClick = { onNavigateTo(recipe.id) },
+            modifier = Modifier.fillParentMaxWidth().animateItem()
+                .then(addModifierWithId(recipe.id))
+        )
+    }
+    if (content.hasMore) {
+        item {
+            LaunchedEffect(Unit) { onLoadMore() }
         }
     }
 }

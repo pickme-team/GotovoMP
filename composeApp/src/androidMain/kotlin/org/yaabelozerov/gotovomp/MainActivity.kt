@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         startKoin {
-            modules(KoinModule.network, KoinModule.viewModels, KoinModule.domain)
+            modules(KoinModule.network, KoinModule.viewModels)
         }
 
         if (BuildConfig.DEBUG) Napier.base(DebugAntilog())
