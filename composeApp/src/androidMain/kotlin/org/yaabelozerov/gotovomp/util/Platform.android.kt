@@ -26,4 +26,4 @@ actual fun createDriver(): SqlDriver {
 
 val androidModule = module {
     single<NetworkMonitor> { AndroidNetworkMonitor(androidContext()) }
-}
+} // респект

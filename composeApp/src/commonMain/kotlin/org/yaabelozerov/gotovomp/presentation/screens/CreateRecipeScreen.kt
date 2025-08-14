@@ -85,9 +85,11 @@ import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import io.github.aakira.napier.Napier
 import org.yaabelozerov.gotovomp.data.network.model.IngredientCreateRequest
 import org.yaabelozerov.gotovomp.data.network.model.RecipeCreateRequest
+import org.yaabelozerov.gotovomp.presentation.components.DropdownTextField
 import org.yaabelozerov.gotovomp.presentation.components.StepTextField
 import org.yaabelozerov.gotovomp.util.toIntOrStay
-import org.yaabelozerov.gotovomp.util.transformQuantity
+import org.yaabelozerov.gotovomp.util.transformQuantityFromDto
+import org.yaabelozerov.gotovomp.util.transformQuantityToDto
 import org.yaabelozerov.gotovomp.viewModels.PersonalVM
 import kotlin.math.max
 
@@ -120,7 +122,8 @@ fun CreateRecipeScreen(
         LazyColumn(state = listState, contentPadding = PaddingValues(16.dp)) {
             item {
                 CenterAlignedTopAppBar(title = {
-                    TextField(current.name,
+                    TextField(
+                        current.name,
                         onValueChange = { current = current.copy(name = it) },
                         placeholder = {
                             Text(
@@ -175,7 +178,8 @@ fun CreateRecipeScreen(
                 }
             }
             itemsIndexed(steps) { index, state ->
-                StepTextField(modifier = Modifier.padding(top = 8.dp),
+                StepTextField(
+                    modifier = Modifier.padding(top = 8.dp),
                     index = index,
                     richTextState = state.second,
                     headline = state.first to { steps[index] = state.copy(first = it) },
@@ -233,7 +237,8 @@ fun CreateRecipeScreen(
                 }
             }
         }
-        AnimatedVisibility(ingredientsOpen,
+        AnimatedVisibility(
+            ingredientsOpen,
             enter = slideInHorizontally(initialOffsetX = { it }),
             exit = slideOutHorizontally(targetOffsetX = { it })
         ) {
@@ -262,7 +267,8 @@ fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifi
             )
         }
         item {
-            CreateIngredientCard(modifier = Modifier.padding(horizontal = 16.dp),
+            CreateIngredientCard(
+                modifier = Modifier.padding(horizontal = 16.dp),
                 show = showAddUi,
                 onCreated = {
                     viewModel.addIngredient(it)
@@ -291,7 +297,8 @@ fun IngredientScreen(viewModel: PersonalVM, onBack: () -> Unit, modifier: Modifi
                                     it.name, modifier = Modifier.padding(8.dp)
                                 )
                                 Text(
-                                    "${it.quantity.toIntOrStay()} ${it.quantityType.transformQuantity()}", modifier = Modifier.padding(8.dp)
+                                    "${it.quantity.toIntOrStay()} ${it.quantityType.transformQuantityFromDto()}",
+                                    modifier = Modifier.padding(8.dp)
                                 )
                             }
                         }
@@ -322,7 +329,8 @@ private fun SearchBar(
     }
     var isFocused by remember { mutableStateOf(false) }
     val shape by animateDpAsState(if (isFocused) 0.dp else 16.dp)
-    TextField(query.first,
+    TextField(
+        query.first,
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
@@ -358,6 +366,7 @@ private fun SearchBar(
             .focusRequester(fr).padding(horizontal = shape).padding(top = shape.div(2)))
 }
 
+
 @Composable
 private fun CreateIngredientCard(
     show: Boolean,
@@ -365,9 +374,15 @@ private fun CreateIngredientCard(
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
-        show, modifier = modifier, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()
+        show,
+        modifier = modifier,
+        enter = expandVertically() + fadeIn(),
+        exit = shrinkVertically() + fadeOut()
     ) {
+        val quantityOptions = listOf("г.", "мл.", "шт.")
+
         var name by remember { mutableStateOf("") }
+        val quantityType = mutableStateOf(quantityOptions[0])
         var quantity by remember { mutableStateOf(1L) }
         var category by remember { mutableStateOf("") }
         var extra by remember { mutableStateOf("") }
@@ -375,7 +390,11 @@ private fun CreateIngredientCard(
             Column(
                 modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("Добавить ингридиент", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 4.dp))
+                Text(
+                    "Добавить ингридиент",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
                 OutlinedTextField(
                     name,
                     textStyle = MaterialTheme.typography.bodyLarge,
@@ -407,7 +426,8 @@ private fun CreateIngredientCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedTextField(quantity.toString(),
+                    OutlinedTextField(
+                        quantity.toString(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         onValueChange = { quantity = it.toLongOrNull() ?: 0L },
                         shape = MaterialTheme.shapes.medium,
@@ -429,22 +449,28 @@ private fun CreateIngredientCard(
                                 )
                             }
                         })
-                    Button(
-                        onClick = {
-                            onCreated(
-                                IngredientCreateRequest(
-                                    name = name,
-                                    quantityType = "GRAMS",
-                                    quantity = quantity.toDouble(),
-                                    category = category,
-                                    additionalParameters = extra
-                                )
-                            )
-                        },
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.height(OutlinedTextFieldDefaults.MinHeight)
-                    ) { Text("Сохранить") }
+                    DropdownTextField(
+                        label = "Ед. изм.",
+                        options = quantityOptions,
+                        selectedOption = quantityType,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
+                Button(
+                    onClick = {
+                        onCreated(
+                            IngredientCreateRequest(
+                                name = name,
+                                quantityType = quantityType.value.transformQuantityToDto(),
+                                quantity = quantity.toDouble(),
+                                category = category,
+                                additionalParameters = extra
+                            )
+                        )
+                    },
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.height(OutlinedTextFieldDefaults.MinHeight)
+                ) { Text("Сохранить") }
             }
         }
     }

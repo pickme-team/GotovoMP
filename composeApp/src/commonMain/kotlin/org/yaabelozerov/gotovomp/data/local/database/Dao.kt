@@ -1,16 +1,11 @@
-package org.yaabelozerov.gotovomp.data.local.Database
+package org.yaabelozerov.gotovomp.data.local.database
 
 import app.cash.sqldelight.db.SqlDriver
 import org.yaabelozerov.RecipeDatabase
 import org.yaabelozerov.gotovomp.data.local.settings.SettingsManager
 
-import org.yaabelozerov.gotovomp.data.network.model.Ingredient
 import org.yaabelozerov.gotovomp.data.network.model.IngredientCreateRequest
 import org.yaabelozerov.gotovomp.data.network.model.RecipeCreateRequest
-import org.yaabelozerov.gotovomp.data.network.model.RecipeDTO
-import org.yaabelozerov.gotovomp.data.network.model.UserDTO
-import org.yaabelozerov.gotovomp.domain.DomainResult
-import org.yaabelozerov.gotovomp.domain.runAndCatch
 
 class Dao(driver: SqlDriver) {
     val db = RecipeDatabase(driver)
@@ -111,9 +106,4 @@ class Dao(driver: SqlDriver) {
     }
 
 
-
-
-    // TODO как добавлять теги, если я не знаю id рецепта
-    // аналогично с ингредиентами
-    // и как в целом делать базу данных, может есть варианты попроще
 }

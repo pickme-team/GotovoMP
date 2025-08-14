@@ -13,11 +13,10 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.yaabelozerov.gotovomp.data.RecipeRepoImpl
-import org.yaabelozerov.gotovomp.data.local.Database.Dao
+import org.yaabelozerov.gotovomp.data.local.database.Dao
 import org.yaabelozerov.gotovomp.data.local.settings.SettingsManager
 import org.yaabelozerov.gotovomp.data.network.ApiClient
 import org.yaabelozerov.gotovomp.domain.RecipeRepo

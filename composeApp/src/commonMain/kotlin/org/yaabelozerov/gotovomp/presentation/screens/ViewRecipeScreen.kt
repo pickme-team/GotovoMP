@@ -39,7 +39,7 @@ import com.mohamedrejeb.richeditor.ui.material3.RichText
 import org.koin.compose.viewmodel.koinViewModel
 import org.yaabelozerov.gotovomp.util.Const
 import org.yaabelozerov.gotovomp.util.toIntOrStay
-import org.yaabelozerov.gotovomp.util.transformQuantity
+import org.yaabelozerov.gotovomp.util.transformQuantityFromDto
 import org.yaabelozerov.gotovomp.viewModels.ViewRecipeVM
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -83,7 +83,7 @@ fun ViewRecipeScreen(
                 Column(modifier = Modifier.weight(0.6f)) {
                     uiState.recipe.ingredients.forEach {
                         ListItem(trailing = {
-                            Text("${it.quantity.toIntOrStay()} ${it.quantityType.transformQuantity()}")
+                            Text("${it.quantity.toIntOrStay()} ${it.quantityType.transformQuantityFromDto()}")
                         }) {
                             Text(it.name, style = MaterialTheme.typography.bodyLarge)
                         }

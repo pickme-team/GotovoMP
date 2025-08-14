@@ -25,20 +25,42 @@ operator fun Setter<TextFieldValue>.invoke() = this.value.text
 
 fun Double.toIntOrStay() = if (this % 1 == 0.0) this.toInt() else this
 
-fun String.transformQuantity(): String {
+fun String.transformQuantityFromDto(): String {
     val mapRu = mapOf(
-        "PSC" to "шт.",
+        "PCS" to "шт.",
         "GRAMS" to "г.",
         "KGS" to "кг.",
         "L" to "л.",
         "MLS" to "мл.",
     )
     val mapEn = mapOf(
-        "PSC" to "pcs.",
+        "PCS" to "pcs.",
         "GRAMS" to "g.",
         "KGS" to "kg.",
         "L" to "l.",
         "MLS" to "ml.",
+    )
+    return if (getLanguage() == "ru") {
+        mapRu[this] ?: this
+    } else {
+        mapEn[this] ?: this
+    }
+}
+
+fun String.transformQuantityToDto(): String {
+    val mapRu = mapOf(
+        "шт." to "PCS",
+        "г." to "GRAMS",
+        "кг." to "KGS",
+        "л." to "L",
+        "мл." to "MLS",
+    )
+    val mapEn = mapOf(
+        "pcs." to "PCS",
+        "g." to "GRAMS",
+        "kg." to "KGS",
+        "l." to "L",
+        "ml." to "MLS",
     )
     return if (getLanguage() == "ru") {
         mapRu[this] ?: this
