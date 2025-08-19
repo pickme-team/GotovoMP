@@ -322,18 +322,16 @@ private fun Register(
             errorText = "Неправильный номер телефона"
         )
         var passwordFocused by remember { mutableStateOf(false) }
-        TextLine(
-            password.value,
+        PasswordTextLine(
+            value = password.value,
             onValueChange = { password(it) },
-            keyboardActions = kbdActions,
-            visualTransformation = PasswordVisualTransformation(),
+            isError = passwordValid.isError() && !passwordFocused,
+            errorText = "Пароль должен содержать не менее 8 символов",
             placeholderText = "Пароль",
             modifier = Modifier.fillMaxWidth().onFocusChanged {
                 lastFocused = it.isFocused
                 passwordFocused = it.isFocused
-            },
-            isError = passwordValid.isError() && !passwordFocused,
-            errorText = "Пароль должен быть от 8 до 30 символов длинной"
+            }
         )
         error?.let {
             when (it) {
