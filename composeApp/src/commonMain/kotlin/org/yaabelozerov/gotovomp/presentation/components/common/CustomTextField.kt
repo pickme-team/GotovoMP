@@ -1,4 +1,4 @@
-package org.yaabelozerov.gotovomp.presentation.components
+package org.yaabelozerov.gotovomp.presentation.components.common
 
 
 import androidx.compose.animation.AnimatedVisibility

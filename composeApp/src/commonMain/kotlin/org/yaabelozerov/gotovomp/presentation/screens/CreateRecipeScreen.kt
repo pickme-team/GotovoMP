@@ -85,8 +85,8 @@ import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import io.github.aakira.napier.Napier
 import org.yaabelozerov.gotovomp.data.network.model.IngredientCreateRequest
 import org.yaabelozerov.gotovomp.data.network.model.RecipeCreateRequest
-import org.yaabelozerov.gotovomp.presentation.components.DropdownTextField
-import org.yaabelozerov.gotovomp.presentation.components.StepTextField
+import org.yaabelozerov.gotovomp.presentation.components.CreateRecipeScreen.DropdownTextField
+import org.yaabelozerov.gotovomp.presentation.components.CreateRecipeScreen.StepTextField
 import org.yaabelozerov.gotovomp.util.toIntOrStay
 import org.yaabelozerov.gotovomp.util.transformQuantityFromDto
 import org.yaabelozerov.gotovomp.util.transformQuantityToDto

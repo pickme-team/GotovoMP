@@ -6,7 +6,12 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -17,39 +22,35 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.dp
-import org.yaabelozerov.gotovomp.domain.DomainError
-import org.yaabelozerov.gotovomp.presentation.components.PhoneVisualTransformation
-import org.yaabelozerov.gotovomp.presentation.components.TextLine
-import org.yaabelozerov.gotovomp.viewModels.AuthVM
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAll
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
-import org.yaabelozerov.gotovomp.util.Setter
-import org.yaabelozerov.gotovomp.util.invoke
+import org.yaabelozerov.gotovomp.domain.DomainError
+import org.yaabelozerov.gotovomp.presentation.components.common.TextLine
+import org.yaabelozerov.gotovomp.presentation.components.authScreen.PasswordTextLine
+import org.yaabelozerov.gotovomp.presentation.components.authScreen.PhoneVisualTransformation
 import org.yaabelozerov.gotovomp.presentation.util.ValidationState
-import org.yaabelozerov.gotovomp.presentation.util.validation
 import org.yaabelozerov.gotovomp.presentation.util.isError
 import org.yaabelozerov.gotovomp.presentation.util.isValid
+import org.yaabelozerov.gotovomp.presentation.util.validation
+import org.yaabelozerov.gotovomp.util.Setter
+import org.yaabelozerov.gotovomp.util.invoke
 import org.yaabelozerov.gotovomp.util.setter
+import org.yaabelozerov.gotovomp.viewModels.AuthVM
 
 
 @Composable
@@ -64,13 +65,20 @@ fun AuthScreen(authVM: AuthVM = koinViewModel()) {
     val setPassword = password.setter { password = it }
     val pager = rememberPagerState { 2 }
     val scope = rememberCoroutineScope()
-    val scroll = { it: Int -> scope.launch {
-        pager.animateScrollToPage(it)
-    } }
+    val scroll = { it: Int ->
+        scope.launch {
+            pager.animateScrollToPage(it)
+        }
+    }
     if (checkedToken) {
         HorizontalPager(pager) { page ->
             when (page) {
-                0 -> LoginWithPhone(setPhone, setPassword, error, { scroll(1); authVM.resetError() })
+                0 -> LoginWithPhone(
+                    setPhone,
+                    setPassword,
+                    error,
+                    { scroll(1); authVM.resetError() })
+
                 1 -> Register(setPhone, setPassword, error, { scroll(0); authVM.resetError() })
             }
         }
@@ -114,7 +122,9 @@ private fun LoginWithPhone(
     }
 
     val kbdActions = KeyboardActions {
-        if (!lastFocused) fm.moveFocus(FocusDirection.Down) else { if (authAvailable) action() }
+        if (!lastFocused) fm.moveFocus(FocusDirection.Down) else {
+            if (authAvailable) action()
+        }
     }
 
     LaunchedEffect(Pair(phone(), password())) {
@@ -123,7 +133,8 @@ private fun LoginWithPhone(
 
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp).windowInsetsPadding(WindowInsets.ime),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp)
+            .windowInsetsPadding(WindowInsets.ime),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
@@ -145,11 +156,11 @@ private fun LoginWithPhone(
             isError = phoneValidation.isError() && !phoneFocused,
             errorText = "Неправильный номер телефона"
         )
-        TextLine(
-            password.value,
-            keyboardActions = kbdActions,
+        PasswordTextLine(
+            value = password.value,
             onValueChange = { password(it) },
-            visualTransformation = PasswordVisualTransformation(),
+            isError = passwordValidation.isError(),
+            errorText = "Пароль должен содержать не менее 8 символов",
             placeholderText = "Пароль",
             modifier = Modifier.fillMaxWidth().onFocusChanged {
                 lastFocused = it.isFocused
@@ -161,13 +172,20 @@ private fun LoginWithPhone(
                 is DomainError.NetworkClientError.Serialization -> "Error retrieving data."
                 is DomainError.NetworkServerError.ServerError -> "Server error. Please try again later."
                 is DomainError.NetworkServerError.Unauthorized -> "Wrong combination of login and password."
-                is DomainError.NetworkServerError.NotFound, is DomainError.NetworkServerError.Conflict -> { toRegister(); null }
+                is DomainError.NetworkServerError.NotFound, is DomainError.NetworkServerError.Conflict -> {
+                    toRegister(); null
+                }
+
                 is DomainError.Unknown -> "Unknown error. Please try again later."
             }?.let { errorMessage ->
                 Text(errorMessage, color = MaterialTheme.colorScheme.error)
             }
         }
-        FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth(), ) {
+        FlowRow(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
             OutlinedButton(onClick = toRegister, shape = MaterialTheme.shapes.medium) {
                 Text("Регистрация")
             }
@@ -197,22 +215,50 @@ private fun Register(
     var lastName by remember { mutableStateOf(TextFieldValue()) }
     var username by remember { mutableStateOf(TextFieldValue()) }
     val phonePrefix = "+7"
-    val action = { authVM.tryRegister(firstName.text, lastName.text, username.text, phonePrefix + phone(), password()) }
+    val action = {
+        authVM.tryRegister(
+            firstName.text,
+            lastName.text,
+            username.text,
+            phonePrefix + phone(),
+            password()
+        )
+    }
     var lastFocused by remember { mutableStateOf(false) }
     val fm = LocalFocusManager.current
 
-    val firstNameValid by derivedStateOf { firstName.text.validation { it.length in 3..25 && it.all(Char::isLetter) } }
-    val lastNameValid by derivedStateOf { lastName.text.validation { it.length in 3..25 && it.all(Char::isLetter) } }
-    val userNameValid by derivedStateOf { username.text.validation { it.length in 5..30 && it.all { it.isLetter() || it == '_' || it.isDigit() } }}
-    val phoneValid by derivedStateOf { phone().validation { it.length == 10 && it.all { it.isDigit() }}}
+    val firstNameValid by derivedStateOf {
+        firstName.text.validation {
+            it.length in 3..25 && it.all(
+                Char::isLetter
+            )
+        }
+    }
+    val lastNameValid by derivedStateOf {
+        lastName.text.validation {
+            it.length in 3..25 && it.all(
+                Char::isLetter
+            )
+        }
+    }
+    val userNameValid by derivedStateOf { username.text.validation { it.length in 5..30 && it.all { it.isLetter() || it == '_' || it.isDigit() } } }
+    val phoneValid by derivedStateOf { phone().validation { it.length == 10 && it.all { it.isDigit() } } }
     val passwordValid by derivedStateOf { password().validation { it.length in 8..30 } }
 
     val authAvailable by derivedStateOf {
-        listOf(firstNameValid, lastNameValid, userNameValid, phoneValid, passwordValid).fastAll { it.isValid() }
+        listOf(
+            firstNameValid,
+            lastNameValid,
+            userNameValid,
+            phoneValid,
+            passwordValid
+        ).fastAll { it.isValid() }
     }
 
     val kbdActions = KeyboardActions {
-        if (!lastFocused) fm.moveFocus(FocusDirection.Down) else { if (authAvailable) action() }
+        if (!lastFocused) fm.moveFocus(FocusDirection.Down) else {
+            if (authAvailable) action()
+        }
     }
 
     LaunchedEffect(Triple(firstName, lastName, username), Pair(phone(), password())) {
@@ -221,7 +267,8 @@ private fun Register(
 
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp).windowInsetsPadding(WindowInsets.ime),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp)
+            .windowInsetsPadding(WindowInsets.ime),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
@@ -275,18 +322,16 @@ private fun Register(
             errorText = "Неправильный номер телефона"
         )
         var passwordFocused by remember { mutableStateOf(false) }
-        TextLine(
-            password.value,
+        PasswordTextLine(
+            value = password.value,
             onValueChange = { password(it) },
-            keyboardActions = kbdActions,
-            visualTransformation = PasswordVisualTransformation(),
+            isError = passwordValid.isError() && !passwordFocused,
+            errorText = "Пароль должен содержать не менее 8 символов",
             placeholderText = "Пароль",
             modifier = Modifier.fillMaxWidth().onFocusChanged {
                 lastFocused = it.isFocused
                 passwordFocused = it.isFocused
-            },
-            isError = passwordValid.isError() && !passwordFocused,
-            errorText = "Пароль должен быть от 8 до 30 символов длинной"
+            }
         )
         error?.let {
             when (it) {
@@ -294,13 +339,20 @@ private fun Register(
                 is DomainError.NetworkClientError.Serialization -> "Error retrieving data."
                 is DomainError.NetworkServerError.ServerError -> "Server error. Please try again later."
                 is DomainError.NetworkServerError.Unauthorized -> "Wrong combination of login and password."
-                is DomainError.NetworkServerError.NotFound, is DomainError.NetworkServerError.Conflict -> { toLogin(); null }
+                is DomainError.NetworkServerError.NotFound, is DomainError.NetworkServerError.Conflict -> {
+                    toLogin(); null
+                }
+
                 is DomainError.Unknown -> "Unknown error. Please try again later."
             }?.let { errorMessage ->
                 Text(errorMessage, color = MaterialTheme.colorScheme.error)
             }
         }
-        FlowRow(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth(), ) {
+        FlowRow(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
             OutlinedButton(onClick = toLogin, shape = MaterialTheme.shapes.medium) {
                 Text("Вход")
             }

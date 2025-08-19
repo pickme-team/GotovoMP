@@ -1,4 +1,4 @@
-package org.yaabelozerov.gotovomp.presentation.components
+package org.yaabelozerov.gotovomp.presentation.components.authScreen
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.yaabelozerov.gotovomp.presentation.components.common.TextLine
 
 
 @Composable

@@ -1,4 +1,4 @@
-package org.yaabelozerov.gotovomp.presentation.components
+package org.yaabelozerov.gotovomp.presentation.components.CreateRecipeScreen
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
