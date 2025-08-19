@@ -1,0 +1,67 @@
+package org.gotovo.gotovomp.data.network
+
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.delete
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.request.url
+import io.ktor.client.statement.HttpResponse
+import org.gotovo.gotovomp.data.network.model.RecipeCreateRequest
+import org.gotovo.gotovomp.data.network.model.RecipeDTO
+import org.gotovo.gotovomp.data.network.model.SignInDTO
+import org.gotovo.gotovomp.data.network.model.SignInRequest
+import org.gotovo.gotovomp.data.network.model.SignUpRequest
+import org.gotovo.gotovomp.data.network.model.UserDTO
+import org.gotovo.gotovomp.domain.DomainResult
+import org.gotovo.gotovomp.domain.runAndCatch
+
+class ApiClient(
+    private val httpClient: HttpClient
+) {
+    suspend fun singUp(body: SignUpRequest): DomainResult<HttpResponse> = runAndCatch {
+        httpClient.post {
+            url("auth/signup")
+            setBody(body)
+        }.body()
+    }
+
+    suspend fun singIn(body: SignInRequest): DomainResult<SignInDTO> = runAndCatch {
+        httpClient.post {
+            url("auth/signin")
+            setBody(body)
+        }.body()
+    }
+
+    suspend fun getUserData(): DomainResult<UserDTO> = runAndCatch {
+        httpClient.get {
+            url("user/me")
+        }.body()
+    }
+
+    suspend fun getOwnedRecipes(): DomainResult<List<RecipeDTO>> = runAndCatch {
+        httpClient.get {
+            url("recipe")
+        }.body()
+    }
+
+    suspend fun getRecipeById(id: Long): DomainResult<RecipeDTO> = runAndCatch {
+        httpClient.get {
+            url("recipe/$id")
+        }.body()
+    }
+
+    suspend fun addRecipe(body: RecipeCreateRequest): DomainResult<HttpResponse> = runAndCatch {
+        httpClient.post {
+            setBody(body)
+            url("recipe")
+        }.body()
+    }
+
+    suspend fun deleteRecipe(id: Long): DomainResult<HttpResponse> = runAndCatch {
+        httpClient.delete {
+            url("recipe/$id")
+        }
+    }
+}
