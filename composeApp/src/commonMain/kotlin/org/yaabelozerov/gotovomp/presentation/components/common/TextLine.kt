@@ -1,4 +1,4 @@
-package org.yaabelozerov.gotovomp.presentation.components
+package org.yaabelozerov.gotovomp.presentation.components.common
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseOutCubic
@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -18,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.onFocusChanged
@@ -31,6 +33,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
+@Suppress("SuspiciousIndentation")
 @Composable
 fun TextLine(
     value: TextFieldValue,
@@ -93,12 +96,17 @@ fun TextLine(
                             size = Size(size.width, 3.dp.toPx()))
                         drawContent()
                     }) {
-                    Row {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         if (prefix != null) {
                             Text(prefix,
                                 style = style)
                         }
-                        Box {
+                        Box(
+                            modifier = Modifier.weight(1f)
+                        ) {
                             innerTextField()
                             if (value.text.isEmpty()) {
                                 Text(
