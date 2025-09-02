@@ -33,7 +33,7 @@ private object NapierLogger : Logger {
 }
 
 object KoinModule {
-    private const val BASE_URL = "http://45.43.77.227:8080/"
+    private const val BASE_URL = "http://188.93.54.243:8080/"
     val network = module {
         single {
             HttpClient {
